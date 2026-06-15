@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Garden For You</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Top Text */
+        #ui-top {
+            position: absolute;
+            top: 15%;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        h1 { font-size: 1.2rem; color: #ffb3c6; margin-bottom: 10px; font-weight: 400; letter-spacing: 1px; }
+        h2 { font-size: 2.8rem; font-weight: 600; color: #fff; text-shadow: 0 0 20px rgba(255, 194, 209, 0.4); margin-bottom: 5px; }
+        p { font-size: 1rem; color: #aaa; }
+
+        /* Bottom Controls */
+        #ui-bottom {
+            position: absolute;
+            bottom: 8%; /* Moved way down */
+            width: 100%;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: auto;
+            transition: opacity 0.5s;
+        }
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        button:hover { background: rgba(255, 255, 255, 0.15); border-color: #ffb3c6; box-shadow: 0 0 15px rgba(255, 179, 198, 0.3); }
+
+        /* Signature */
+        #watermark {
+            position: absolute;
+            bottom: 2%;
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.3);
+            z-index: 10;
+            pointer-events: none;
+            letter-spacing: 1px;
+            transition: opacity 0.5s;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-top">
+        <h1>🌸 Flower Garden For You</h1>
+        <p>Click Anywhere to</p>
+        <h2>Plant Flowers</h2>
+        <p>or turn on Auto Bloom</p>
+    </div>
+
+    <div id="ui-bottom">
+        <button id="clearBtn">Clear Garden</button>
+        <button id="autoBloomBtn">▶ Auto Bloom</button>
+    </div>
+
+    <div id="watermark">Made By Manik~</div>
+
+    <canvas id="garden"></canvas>
+
+    <script>
+        const canvas = document.getElementById('garden');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let flowers = [];
+        let autoBloomInterval = null;
+        let time = 0;
+        
+        const palettes = [
+            { main: 'rgba(255, 126, 179, 0.8)', glow: '#ff7eb3' }, 
+            { main: 'rgba(255, 185, 208, 0.8)', glow: '#ffb9d0' }, 
+            { main: 'rgba(168, 230, 207, 0.8)', glow: '#a8e6cf' }, 
+            { main: 'rgba(220, 175, 255, 0.8)', glow: '#dcafff' }, 
+            { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
+        ];
+
+        const preRenderedFlowers = [];
+        const cacheSize = 250; 
+
+        function initPreRenders() {
+            const dpr = window.devicePixelRatio || 1;
+            
+            palettes.forEach(palette => {
+                for(let v = 0; v < 3; v++) {
+                    const pCanvas = document.createElement('canvas');
+                    pCanvas.width = cacheSize * dpr;
+                    pCanvas.height = cacheSize * dpr;
+                    const pCtx = pCanvas.getContext('2d');
+                    pCtx.scale(dpr, dpr);
+                    
+                    const center = cacheSize / 2;
+                    const petalCount = Math.floor(Math.random() * 3) + 5;
+                    const petalSize = Math.random() * 15 + 35; 
+
+                    pCtx.translate(center, center);
+                    
+                    pCtx.shadowBlur = 30;
+                    pCtx.shadowColor = palette.glow;
+                    pCtx.globalCompositeOperation = 'screen';
+
+                    for (let layer = 0; layer < 2; layer++) {
+                        const layerScale = layer === 0 ? 1 : 0.6;
+                        const layerPetals = layer === 0 ? petalCount : petalCount - 1;
+                        
+                        pCtx.fillStyle = layer === 0 ? palette.main : '#ffffff';
+                        
+                        for (let i = 0; i < layerPetals; i++) {
+                            pCtx.save();
+                            pCtx.rotate((Math.PI * 2 / layerPetals) * i + (Math.PI / 4));
+                            pCtx.scale(layerScale, layerScale);
+                            
+                            pCtx.beginPath();
+                            pCtx.moveTo(0, 0);
+                            pCtx.bezierCurveTo(-petalSize / 1.5, -petalSize / 2, 
+                                              -petalSize / 2, -petalSize, 
+                                              0, -petalSize * 1.2);
+                            pCtx.bezierCurveTo(petalSize / 2, -petalSize, 
+                                              petalSize / 1.5, -petalSize / 2, 
+                                              0, 0);
+                            pCtx.fill();
+                            pCtx.restore();
+                        }
+                    }
+
+                    pCtx.beginPath();
+                    pCtx.arc(0, 0, 6, 0, Math.PI * 2);
+                    pCtx.fillStyle = '#fff9c4';
+                    pCtx.shadowBlur = 10;
+                    pCtx.shadowColor = '#fff9c4';
+                    pCtx.fill();
+
+                    preRenderedFlowers.push(pCanvas);
+                }
+            });
+        }
+        initPreRenders();
+
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            ctx.scale(dpr, dpr);
+            
+            width = window.innerWidth;
+            height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+        class Flower {
+            constructor(x, y) {
+                this.startX = x;
+                this.targetY = y;
+                this.baseY = height + 50; 
+                this.maxHeight = this.baseY - y;
+                
+                this.stemProgress = 0;
+                this.bloomProgress = 0;
+                
+                this.cachedImage = preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)];
+                
+                this.swayOffset = Math.random() * 1000;
+                this.swaySpeed = Math.random() * 0.02 + 0.01;
+                this.staticRotation = Math.random() * Math.PI * 2; 
+            }
+
+            update() {
+                if (this.stemProgress < 1) {
+                    this.stemProgress += 0.015;
+                } else if (this.bloomProgress < 1) {
+                    this.bloomProgress += 0.008;
+                }
+            }
+
+            draw() {
+                const currentHeight = this.maxHeight * easeOut(this.stemProgress);
+                const sway = Math.sin(time * this.swaySpeed + this.swayOffset) * 20 * (currentHeight / this.maxHeight);
+                const headX = this.startX + sway;
+                const headY = this.baseY - currentHeight;
+
+                ctx.save();
+                
+                ctx.beginPath();
+                ctx.moveTo(this.startX, this.baseY);
+                ctx.quadraticCurveTo(this.startX, this.baseY - currentHeight / 2, headX, headY);
+                
+                const stemGradient = ctx.createLinearGradient(this.startX, this.baseY, headX, headY);
+                stemGradient.addColorStop(0, '#1a4a2b');
+                stemGradient.addColorStop(1, '#4ade80');
+                
+                ctx.strokeStyle = stemGradient;
+                ctx.lineWidth = 4 * easeOut(this.stemProgress);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                if (this.stemProgress >= 0.5) {
+                    const bloomEase = easeOut(this.bloomProgress);
+                    ctx.translate(headX, headY);
+                    ctx.rotate(this.staticRotation); 
+                    
+                    const drawSize = cacheSize * bloomEase;
+                    ctx.drawImage(this.cachedImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); 
+            time++;
+            
+            flowers.forEach(flower => {
+                flower.update();
+                flower.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        const uiTop = document.getElementById('ui-top');
+        const uiBottom = document.getElementById('ui-bottom');
+        const watermark = document.getElementById('watermark');
+
+        function setUIOpacity(opacity) {
+            uiTop.style.opacity = opacity;
+            uiBottom.style.opacity = opacity;
+            watermark.style.opacity = opacity;
+        }
+
+        canvas.addEventListener('click', (e) => {
+            flowers.push(new Flower(e.clientX, e.clientY));
+            setUIOpacity('0.1');
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            flowers = [];
+            setUIOpacity('1');
+        });
+
+        document.getElementById('autoBloomBtn').addEventListener('click', (e) => {
+            const btn = e.target;
+            if (autoBloomInterval) {
+                clearInterval(autoBloomInterval);
+                autoBloomInterval = null;
+                btn.innerText = '▶ Auto Bloom';
+                btn.style.color = '#fff';
+            } else {
+                setUIOpacity('0.1');
+                btn.innerText = '⏸ Stop Bloom';
+                btn.style.color = '#ffb3c6';
+                autoBloomInterval = setInterval(() => {
+                    const randomX = Math.random() * width;
+                    const randomY = height - (Math.random() * (height * 0.5) + 150);
+                    flowers.push(new Flower(randomX, randomY));
+                }, 600);
+            }
+        });
+
+        animate();
+    </script>
+</body>
+</html>
+    
