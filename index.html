@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -64,7 +64,6 @@
             transition: opacity 0.5s;
         }
 
-        /* Prevent browser scrolling when swiping on mobile */
         canvas { 
             position: absolute; 
             top: 0; 
@@ -111,12 +110,13 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
-        // --- PRE-RENDERING ---
+        // Restored HD Cache Settings
         const preRenderedFlowers = [];
         const cacheSize = 250; 
 
         function initPreRenders() {
-            const dpr = window.devicePixelRatio || 1;
+            // Capped at 3 for HD without destroying the GPU
+            const dpr = Math.min(window.devicePixelRatio || 1, 3); 
             
             palettes.forEach(palette => {
                 for(let v = 0; v < 3; v++) {
@@ -128,18 +128,18 @@
                     
                     const center = cacheSize / 2;
                     const petalCount = Math.floor(Math.random() * 3) + 5;
-                    const petalSize = Math.random() * 15 + 35; 
+                    const petalSize = Math.random() * 15 + 35; // Restored big elegant petals
 
                     pCtx.translate(center, center);
                     
-                    pCtx.shadowBlur = 30;
+                    // Restored the heavy, beautiful glow (only runs once!)
+                    pCtx.shadowBlur = 30; 
                     pCtx.shadowColor = palette.glow;
                     pCtx.globalCompositeOperation = 'screen';
 
                     for (let layer = 0; layer < 2; layer++) {
                         const layerScale = layer === 0 ? 1 : 0.6;
                         const layerPetals = layer === 0 ? petalCount : petalCount - 1;
-                        
                         pCtx.fillStyle = layer === 0 ? palette.main : '#ffffff';
                         
                         for (let i = 0; i < layerPetals; i++) {
@@ -149,12 +149,8 @@
                             
                             pCtx.beginPath();
                             pCtx.moveTo(0, 0);
-                            pCtx.bezierCurveTo(-petalSize / 1.5, -petalSize / 2, 
-                                              -petalSize / 2, -petalSize, 
-                                              0, -petalSize * 1.2);
-                            pCtx.bezierCurveTo(petalSize / 2, -petalSize, 
-                                              petalSize / 1.5, -petalSize / 2, 
-                                              0, 0);
+                            pCtx.bezierCurveTo(-petalSize / 1.5, -petalSize / 2, -petalSize / 2, -petalSize, 0, -petalSize * 1.2);
+                            pCtx.bezierCurveTo(petalSize / 2, -petalSize, petalSize / 1.5, -petalSize / 2, 0, 0);
                             pCtx.fill();
                             pCtx.restore();
                         }
@@ -174,7 +170,7 @@
         initPreRenders();
 
         function resize() {
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
             canvas.style.width = `${window.innerWidth}px`;
@@ -188,7 +184,6 @@
 
         function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
-        // STANDARD FLOWER (For Taps & Auto-bloom)
         class Flower {
             constructor(x, y) {
                 this.startX = x;
@@ -216,9 +211,11 @@
                 ctx.beginPath();
                 ctx.moveTo(this.startX, this.baseY);
                 ctx.quadraticCurveTo(this.startX, this.baseY - currentHeight / 2, headX, headY);
+                
                 const stemGradient = ctx.createLinearGradient(this.startX, this.baseY, headX, headY);
                 stemGradient.addColorStop(0, '#1a4a2b');
                 stemGradient.addColorStop(1, '#4ade80');
+                
                 ctx.strokeStyle = stemGradient;
                 ctx.lineWidth = 4 * easeOut(this.stemProgress);
                 ctx.lineCap = 'round';
@@ -235,29 +232,37 @@
             }
         }
 
-        // SWIPE VINE (For Dragging)
         class Vine {
             constructor(startX, startY) {
                 this.points = [{x: startX, y: startY}];
                 this.blooms = [];
                 this.lastBloomPoint = {x: startX, y: startY};
+                this.lastDrawPoint = {x: startX, y: startY};
             }
             addPoint(x, y) {
-                this.points.push({x, y});
-                const dx = x - this.lastBloomPoint.x;
-                const dy = y - this.lastBloomPoint.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
+                const dx = x - this.lastDrawPoint.x;
+                const dy = y - this.lastDrawPoint.y;
+                const distToLast = Math.sqrt(dx*dx + dy*dy);
                 
-                // Spawn a new flower every 70 pixels drawn
-                if (dist > 70) {
-                    this.blooms.push({
-                        x: x, 
-                        y: y, 
-                        progress: 0,
-                        cachedImage: preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)],
-                        rotation: Math.random() * Math.PI * 2
-                    });
-                    this.lastBloomPoint = {x, y};
+                // Keeps point count low to prevent lag
+                if (distToLast > 12) {
+                    this.points.push({x, y});
+                    this.lastDrawPoint = {x, y};
+                    
+                    const bx = x - this.lastBloomPoint.x;
+                    const by = y - this.lastBloomPoint.y;
+                    const distToBloom = Math.sqrt(bx*bx + by*by);
+                    
+                    if (distToBloom > 70) {
+                        this.blooms.push({
+                            x: x, 
+                            y: y, 
+                            progress: 0,
+                            cachedImage: preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)],
+                            rotation: Math.random() * Math.PI * 2
+                        });
+                        this.lastBloomPoint = {x, y};
+                    }
                 }
             }
             update() {
@@ -275,21 +280,25 @@
                     ctx.lineTo(this.points[i].x, this.points[i].y);
                 }
                 
+                // Restored the true elegant glow to the vine
                 ctx.strokeStyle = '#4ade80';
                 ctx.shadowColor = '#4ade80';
-                ctx.shadowBlur = 8;
+                ctx.shadowBlur = 10;
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.stroke();
+
+                // Clear shadow so it doesn't mess with the stamps
+                ctx.shadowBlur = 0;
 
                 this.blooms.forEach(b => {
                     const bloomEase = easeOut(b.progress);
                     if (bloomEase > 0.01) {
                         ctx.translate(b.x, b.y);
                         ctx.rotate(b.rotation);
-                        // Scale slightly smaller for vines so they don't look cluttered
-                        const drawSize = cacheSize * bloomEase * 0.75; 
+                        // Restored nice big flower sizes on the vines
+                        const drawSize = cacheSize * bloomEase * 0.8; 
                         ctx.drawImage(b.cachedImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
                         ctx.rotate(-b.rotation);
                         ctx.translate(-b.x, -b.y);
@@ -300,7 +309,7 @@
         }
 
         function animate() {
-            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); 
+            ctx.clearRect(0, 0, width, height); 
             time++;
             
             flowers.forEach(flower => { flower.update(); flower.draw(); });
@@ -309,7 +318,6 @@
             requestAnimationFrame(animate);
         }
 
-        // --- INTERACTIVITY ---
         const uiTop = document.getElementById('ui-top');
         const uiBottom = document.getElementById('ui-bottom');
         const watermark = document.getElementById('watermark');
@@ -341,21 +349,20 @@
             if (!isDrawing) return;
             isDrawing = false;
             
-            // Check how far we dragged. If it's very short, treat it as a click.
             const dx = e.clientX - startPos.x;
             const dy = e.clientY - startPos.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             
             if (dist < 10) {
-                vines.pop(); // Remove the empty vine we just started
-                flowers.push(new Flower(e.clientX, e.clientY)); // Plant standard vertical flower
+                vines.pop(); 
+                flowers.push(new Flower(e.clientX, e.clientY)); 
             }
             currentVine = null;
         });
 
         document.getElementById('clearBtn').addEventListener('click', () => {
             flowers = [];
-            vines = []; // Clear vines too
+            vines = []; 
             setUIOpacity('1');
         });
 
@@ -374,7 +381,7 @@
                     const randomX = Math.random() * width;
                     const randomY = height - (Math.random() * (height * 0.5) + 150);
                     flowers.push(new Flower(randomX, randomY));
-                }, 600);
+                }, 500); 
             }
         });
 
