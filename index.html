@@ -90,6 +90,10 @@
 
     <div id="watermark">Made By Manik~</div>
 
+    <audio id="bgm" loop>
+        <source src="dandelions.mp3" type="audio/mpeg">
+    </audio>
+
     <canvas id="garden"></canvas>
 
     <script>
@@ -110,12 +114,10 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
-        // Restored HD Cache Settings
         const preRenderedFlowers = [];
         const cacheSize = 250; 
 
         function initPreRenders() {
-            // Capped at 3 for HD without destroying the GPU
             const dpr = Math.min(window.devicePixelRatio || 1, 3); 
             
             palettes.forEach(palette => {
@@ -128,11 +130,10 @@
                     
                     const center = cacheSize / 2;
                     const petalCount = Math.floor(Math.random() * 3) + 5;
-                    const petalSize = Math.random() * 15 + 35; // Restored big elegant petals
+                    const petalSize = Math.random() * 15 + 35; 
 
                     pCtx.translate(center, center);
                     
-                    // Restored the heavy, beautiful glow (only runs once!)
                     pCtx.shadowBlur = 30; 
                     pCtx.shadowColor = palette.glow;
                     pCtx.globalCompositeOperation = 'screen';
@@ -244,7 +245,6 @@
                 const dy = y - this.lastDrawPoint.y;
                 const distToLast = Math.sqrt(dx*dx + dy*dy);
                 
-                // Keeps point count low to prevent lag
                 if (distToLast > 12) {
                     this.points.push({x, y});
                     this.lastDrawPoint = {x, y};
@@ -280,7 +280,6 @@
                     ctx.lineTo(this.points[i].x, this.points[i].y);
                 }
                 
-                // Restored the true elegant glow to the vine
                 ctx.strokeStyle = '#4ade80';
                 ctx.shadowColor = '#4ade80';
                 ctx.shadowBlur = 10;
@@ -289,7 +288,6 @@
                 ctx.lineJoin = 'round';
                 ctx.stroke();
 
-                // Clear shadow so it doesn't mess with the stamps
                 ctx.shadowBlur = 0;
 
                 this.blooms.forEach(b => {
@@ -297,7 +295,6 @@
                     if (bloomEase > 0.01) {
                         ctx.translate(b.x, b.y);
                         ctx.rotate(b.rotation);
-                        // Restored nice big flower sizes on the vines
                         const drawSize = cacheSize * bloomEase * 0.8; 
                         ctx.drawImage(b.cachedImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
                         ctx.rotate(-b.rotation);
@@ -328,11 +325,24 @@
             watermark.style.opacity = opacity;
         }
 
+        // AUDIO LOGIC
+        let isMusicPlaying = false;
+        const bgm = document.getElementById('bgm');
+        bgm.volume = 0.5; // Starts at 50% volume
+
+        function startMusic() {
+            if (!isMusicPlaying) {
+                bgm.play().catch(e => console.log("Audio play blocked until interaction:", e));
+                isMusicPlaying = true;
+            }
+        }
+
         let isDrawing = false;
         let currentVine = null;
         let startPos = {x: 0, y: 0};
 
         canvas.addEventListener('pointerdown', (e) => {
+            startMusic(); // Triggers music on tap/swipe
             isDrawing = true;
             startPos = {x: e.clientX, y: e.clientY};
             currentVine = new Vine(e.clientX, e.clientY);
@@ -367,6 +377,7 @@
         });
 
         document.getElementById('autoBloomBtn').addEventListener('click', (e) => {
+            startMusic(); // Triggers music if they hit auto bloom first
             const btn = e.target;
             if (autoBloomInterval) {
                 clearInterval(autoBloomInterval);
