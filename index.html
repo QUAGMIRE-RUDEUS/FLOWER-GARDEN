@@ -90,10 +90,6 @@
 
     <div id="watermark">Made By Manik~</div>
 
-    <audio id="bgm" loop>
-        <source src="dandelions.mp3" type="audio/mpeg">
-    </audio>
-
     <canvas id="garden"></canvas>
 
     <script>
@@ -114,6 +110,23 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
+        // BULLETPROOF AUDIO LOGIC (Direct JS Engine Injection)
+        let isMusicPlaying = false;
+        const bgm = new Audio('./dandelions.mp3'); 
+        bgm.loop = true;
+        bgm.volume = 0.5;
+
+        function startMusic() {
+            if (!isMusicPlaying) {
+                bgm.play().then(() => {
+                    isMusicPlaying = true;
+                }).catch(err => {
+                    console.log("Audio waiting for stronger user gesture...", err);
+                });
+            }
+        }
+
+        // PRE-RENDERING CACHE (Stops mobile lag)
         const preRenderedFlowers = [];
         const cacheSize = 250; 
 
@@ -325,24 +338,12 @@
             watermark.style.opacity = opacity;
         }
 
-        // AUDIO LOGIC
-        let isMusicPlaying = false;
-        const bgm = document.getElementById('bgm');
-        bgm.volume = 0.5; // Starts at 50% volume
-
-        function startMusic() {
-            if (!isMusicPlaying) {
-                bgm.play().catch(e => console.log("Audio play blocked until interaction:", e));
-                isMusicPlaying = true;
-            }
-        }
-
         let isDrawing = false;
         let currentVine = null;
         let startPos = {x: 0, y: 0};
 
         canvas.addEventListener('pointerdown', (e) => {
-            startMusic(); // Triggers music on tap/swipe
+            startMusic(); // Directly fires audio process
             isDrawing = true;
             startPos = {x: e.clientX, y: e.clientY};
             currentVine = new Vine(e.clientX, e.clientY);
@@ -377,7 +378,7 @@
         });
 
         document.getElementById('autoBloomBtn').addEventListener('click', (e) => {
-            startMusic(); // Triggers music if they hit auto bloom first
+            startMusic(); 
             const btn = e.target;
             if (autoBloomInterval) {
                 clearInterval(autoBloomInterval);
