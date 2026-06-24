@@ -139,7 +139,7 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
-        // --- RESTORED: BULLETPROOF AUDIO LOGIC ---
+        // --- BULLETPROOF AUDIO LOGIC WITH FORCED IOS UNLOCK ---
         let isMusicPlaying = false;
         const bgm = new Audio('./dandelions.mp3'); 
         bgm.loop = true;
@@ -150,10 +150,14 @@
                 bgm.play().then(() => {
                     isMusicPlaying = true;
                 }).catch(err => {
-                    console.log("Audio waiting for stronger user gesture...", err);
+                    console.log("Audio engine bypass triggered:", err);
                 });
             }
         }
+
+        // Force iOS core engine to accept the audio context on standard native touch events
+        window.addEventListener('touchstart', startMusic, { once: true });
+        window.addEventListener('click', startMusic, { once: true });
 
         // --- PRE-RENDERING CACHE ---
         const preRenderedFlowers = [];
@@ -275,7 +279,6 @@
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.lineWidth = 1;
                 
-                ctx.makePath = ctx.beginPath();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(Math.sin(this.wobble) * 0.1);
                 
