@@ -12,11 +12,12 @@
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
             height: 100vh;
+            transition: background 2.5s ease-in-out;
         }
         
         #ui-top {
             position: absolute;
-            top: 15%;
+            top: 8%;
             width: 100%;
             text-align: center;
             z-index: 10;
@@ -29,7 +30,7 @@
 
         #note-container {
             position: absolute;
-            top: 14%;
+            top: 9%;
             width: 100%;
             text-align: center;
             z-index: 10;
@@ -38,13 +39,15 @@
             transition: opacity 1.5s ease-in-out;
             padding: 0 20px;
         }
+        
         .romantic-note {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             line-height: 1.8;
             color: #ffe5ec;
             font-weight: 300;
-            text-shadow: 0 0 15px rgba(255, 179, 198, 0.3);
+            text-shadow: 0 0 15px rgba(255, 179, 198, 0.4);
             font-style: italic;
+            transition: all 1s ease-in-out;
         }
 
         #ui-bottom {
@@ -58,6 +61,7 @@
             pointer-events: auto;
             transition: opacity 0.8s;
         }
+        
         button {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -68,8 +72,18 @@
             font-size: 0.9rem;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent !important;
         }
-        button:hover { background: rgba(255, 255, 255, 0.15); border-color: #ffb3c6; box-shadow: 0 0 15px rgba(255, 179, 198, 0.3); }
+        button:hover, button:focus, button:active { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-color: #ffb3c6; 
+            box-shadow: 0 0 15px rgba(255, 179, 198, 0.3);
+            outline: none;
+            -webkit-tap-highlight-color: transparent !important;
+        }
 
         #watermark {
             position: absolute;
@@ -78,10 +92,64 @@
             text-align: center;
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.3);
-            z-index: 10;
-            pointer-events: none;
+            z-index: 11;
+            cursor: pointer;
+            pointer-events: auto;
             letter-spacing: 1px;
+            user-select: none;
+            outline: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent !important;
             transition: opacity 0.5s;
+        }
+
+        #secret-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .modal-content {
+            background: rgba(20, 20, 20, 0.7);
+            border: 1px solid rgba(255, 179, 198, 0.2);
+            padding: 30px 40px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            max-width: 90%;
+            width: 340px;
+        }
+        .modal-content h3 {
+            font-size: 1rem;
+            color: #ffb3c6;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        .modal-content input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        .modal-content input:focus {
+            border-color: #ffb3c6;
+            box-shadow: 0 0 15px rgba(255, 179, 198, 0.2);
         }
 
         canvas { 
@@ -104,7 +172,7 @@
     </div>
 
     <div id="note-container">
-        <p class="romantic-note">
+        <p id="main-note" class="romantic-note">
             Just wanted to leave a little corner of calm here.<br>
             Hope it made you smile, even if only for a minute. 🌸
         </p>
@@ -117,6 +185,17 @@
 
     <div id="watermark">Made By Manik~</div>
 
+    <div id="secret-modal">
+        <div class="modal-content">
+            <h3>SECRET CODE</h3>
+            <input type="text" id="secret-input" placeholder="[. TYPE HERE .]" autocomplete="off" autocapitalize="off">
+        </div>
+    </div>
+
+    <audio id="bgm" loop>
+        <source src="dandelions.mp3" type="audio/mpeg">
+    </audio>
+
     <canvas id="garden"></canvas>
 
     <script>
@@ -128,9 +207,14 @@
         let vines = [];
         let fireflies = [];
         let dandelionSeeds = [];
+        let cherryBlossoms = [];
         let autoBloomInterval = null;
         let time = 0;
         
+        let isManyaMode = false;
+        let watermarkClicks = 0;
+        let blossomRainActive = false;
+
         const palettes = [
             { main: 'rgba(255, 126, 179, 0.8)', glow: '#ff7eb3' }, 
             { main: 'rgba(255, 185, 208, 0.8)', glow: '#ffb9d0' }, 
@@ -139,33 +223,25 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
-        // --- BULLETPROOF AUDIO LOGIC WITH FORCED IOS UNLOCK ---
         let isMusicPlaying = false;
-        const bgm = new Audio('./dandelions.mp3'); 
-        bgm.loop = true;
+        const bgm = document.getElementById('bgm'); 
         bgm.volume = 0.5;
 
         function startMusic() {
             if (!isMusicPlaying) {
                 bgm.play().then(() => {
                     isMusicPlaying = true;
-                }).catch(err => {
-                    console.log("Audio engine bypass triggered:", err);
-                });
+                }).catch(err => console.log(err));
             }
         }
-
-        // Force iOS core engine to accept the audio context on standard native touch events
         window.addEventListener('touchstart', startMusic, { once: true });
         window.addEventListener('click', startMusic, { once: true });
 
-        // --- PRE-RENDERING CACHE ---
         const preRenderedFlowers = [];
         const cacheSize = 250; 
 
         function initPreRenders() {
             const dpr = Math.min(window.devicePixelRatio || 1, 3); 
-            
             palettes.forEach(palette => {
                 for(let v = 0; v < 3; v++) {
                     const pCanvas = document.createElement('canvas');
@@ -179,7 +255,6 @@
                     const petalSize = Math.random() * 15 + 35; 
 
                     pCtx.translate(center, center);
-                    
                     pCtx.shadowBlur = 30; 
                     pCtx.shadowColor = palette.glow;
                     pCtx.globalCompositeOperation = 'screen';
@@ -216,6 +291,35 @@
         }
         initPreRenders();
 
+        class CherryBlossom {
+            constructor() {
+                this.x = Math.random() * (window.innerWidth + 450) - 350;
+                this.y = -20;
+                this.size = Math.random() * 4 + 5;
+                this.speedX = Math.random() * 0.6 + 0.3; 
+                this.speedY = Math.random() * 1.2 + 0.8;
+                this.wobble = Math.random() * Math.PI;
+                this.wobbleSpeed = Math.random() * 0.02 + 0.01;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.wobble) * 0.4;
+                this.wobble += this.wobbleSpeed;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.wobble);
+                ctx.fillStyle = 'rgba(255, 182, 193, 0.85)';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ffb3c6';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size / 1.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
         class Firefly {
             constructor() {
                 this.x = Math.random() * window.innerWidth;
@@ -230,7 +334,6 @@
                 this.angle += this.wobbleSpeed;
                 this.x += this.speedX + Math.sin(this.angle) * 0.2;
                 this.y += this.speedY + Math.cos(this.angle) * 0.2;
-
                 if (this.x < 0) this.x = width;
                 if (this.x > width) this.x = 0;
                 if (this.y < 0) this.y = height;
@@ -239,23 +342,21 @@
             draw() {
                 ctx.save();
                 ctx.globalCompositeOperation = 'screen';
+                let currentScale = isManyaMode ? this.size * 2.2 : this.size;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(254, 240, 138, 0.08)';
+                ctx.arc(this.x, this.y, currentScale * 4, 0, Math.PI * 2);
+                ctx.fillStyle = isManyaMode ? 'rgba(255, 179, 198, 0.12)' : 'rgba(254, 240, 138, 0.08)';
                 ctx.fill();
-                
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(253, 224, 71, 0.7)';
+                ctx.arc(this.x, this.y, currentScale, 0, Math.PI * 2);
+                ctx.fillStyle = isManyaMode ? 'rgba(255, 105, 180, 0.9)' : 'rgba(253, 224, 71, 0.7)';
                 ctx.fill();
                 ctx.restore();
             }
         }
 
         class DandelionSeed {
-            constructor() {
-                this.reset(true);
-            }
+            constructor() { this.reset(true); }
             reset(randomX = false) {
                 this.x = randomX ? Math.random() * window.innerWidth : -50;
                 this.y = Math.random() * (window.innerHeight * 0.8);
@@ -269,30 +370,21 @@
                 this.wobble += this.wobbleSpeed;
                 this.x += this.speedX;
                 this.y += this.speedY + Math.sin(this.wobble) * 0.15;
-
-                if (this.x > width + 50 || this.y > height + 50) {
-                    this.reset(false);
-                }
+                if (this.x > width + 50 || this.y > height + 50) this.reset(false);
             }
             draw() {
                 ctx.save();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.strokeStyle = isManyaMode ? 'rgba(255, 182, 193, 0.6)' : 'rgba(255, 255, 255, 0.4)';
                 ctx.lineWidth = 1;
-                
                 ctx.translate(this.x, this.y);
                 ctx.rotate(Math.sin(this.wobble) * 0.1);
-                
                 ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(-this.size, this.size); 
-                ctx.stroke();
-                
+                ctx.moveTo(0, 0); ctx.lineTo(-this.size, this.size); ctx.stroke();
                 ctx.beginPath();
                 ctx.moveTo(0,0); ctx.lineTo(this.size * 0.4, -this.size * 0.2);
                 ctx.moveTo(0,0); ctx.lineTo(this.size * 0.2, -this.size * 0.4);
                 ctx.moveTo(0,0); ctx.lineTo(-this.size * 0.2, -this.size * 0.4);
                 ctx.stroke();
-                
                 ctx.restore();
             }
         }
@@ -306,9 +398,10 @@
             ctx.scale(dpr, dpr);
             width = window.innerWidth;
             height = window.innerHeight;
-
-            fireflies = Array.from({ length: 25 }, () => new Firefly());
-            dandelionSeeds = Array.from({ length: 15 }, () => new DandelionSeed());
+            if(fireflies.length === 0) {
+                fireflies = Array.from({ length: 30 }, () => new Firefly());
+                dandelionSeeds = Array.from({ length: 15 }, () => new DandelionSeed());
+            }
         }
         window.addEventListener('resize', resize);
         resize();
@@ -316,21 +409,44 @@
         function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
         class Flower {
-            constructor(x, y) {
+            constructor(x, y, forcedPink = false) {
                 this.startX = x;
                 this.targetY = y;
                 this.baseY = height + 50; 
                 this.maxHeight = this.baseY - y;
                 this.stemProgress = 0;
                 this.bloomProgress = 0;
-                this.cachedImage = preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)];
+                
+                this.alpha = 1;
+                this.dissolving = false;
+                this.driftX = 0;
+                this.driftY = 0;
+                this.fallSpeedY = Math.random() * 1.2 + 0.6;
+                this.fallSpeedX = Math.random() * 0.6 + 0.4; 
+                this.rotSpeed = (Math.random() - 0.5) * 0.03;
+                
+                // Track color state strictly to individual flower instance
+                this.isPink = forcedPink || isManyaMode;
+
+                if (this.isPink) {
+                    this.cachedImage = preRenderedFlowers[Math.floor(Math.random() * 6)]; 
+                } else {
+                    this.cachedImage = preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)];
+                }
                 this.swayOffset = Math.random() * 1000;
                 this.swaySpeed = Math.random() * 0.02 + 0.01;
                 this.staticRotation = Math.random() * Math.PI * 2; 
             }
             update() {
-                if (this.stemProgress < 1) this.stemProgress += 0.015;
-                else if (this.bloomProgress < 1) this.bloomProgress += 0.008;
+                if (this.dissolving) {
+                    this.alpha -= 0.007;
+                    this.driftX += this.fallSpeedX;
+                    this.driftY += this.fallSpeedY;
+                    this.staticRotation += this.rotSpeed;
+                } else {
+                    if (this.stemProgress < 1) this.stemProgress += 0.015;
+                    else if (this.bloomProgress < 1) this.bloomProgress += 0.008;
+                }
             }
             draw() {
                 const currentHeight = this.maxHeight * easeOut(this.stemProgress);
@@ -339,27 +455,41 @@
                 const headY = this.baseY - currentHeight;
 
                 ctx.save();
+                if (this.dissolving) {
+                    ctx.globalAlpha = Math.max(0, this.alpha * 2.5 - 1.5); 
+                }
                 ctx.beginPath();
                 ctx.moveTo(this.startX, this.baseY);
                 ctx.quadraticCurveTo(this.startX, this.baseY - currentHeight / 2, headX, headY);
                 
                 const stemGradient = ctx.createLinearGradient(this.startX, this.baseY, headX, headY);
-                stemGradient.addColorStop(0, '#1a4a2b');
-                stemGradient.addColorStop(1, '#4ade80');
+                if (this.isPink) {
+                    stemGradient.addColorStop(0, '#3a111c'); 
+                    stemGradient.addColorStop(1, '#ff85a2'); 
+                } else {
+                    stemGradient.addColorStop(0, '#1a4a2b');
+                    stemGradient.addColorStop(1, '#4ade80');
+                }
                 
                 ctx.strokeStyle = stemGradient;
                 ctx.lineWidth = 4 * easeOut(this.stemProgress);
                 ctx.lineCap = 'round';
                 ctx.stroke();
+                ctx.restore();
 
                 if (this.stemProgress >= 0.5) {
-                    const bloomEase = easeOut(this.bloomProgress);
-                    ctx.translate(headX, headY);
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, this.alpha);
+                    if (this.dissolving) {
+                        ctx.translate(headX + this.driftX, headY + this.driftY);
+                    } else {
+                        ctx.translate(headX, headY);
+                    }
                     ctx.rotate(this.staticRotation); 
-                    const drawSize = cacheSize * bloomEase;
+                    const drawSize = cacheSize * easeOut(this.bloomProgress);
                     ctx.drawImage(this.cachedImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                    ctx.restore();
                 }
-                ctx.restore();
             }
         }
 
@@ -367,6 +497,9 @@
             constructor(startX, startY) {
                 this.points = [{x: startX, y: startY}];
                 this.blooms = [];
+                this.alpha = 1;
+                this.dissolving = false;
+                this.isPink = isManyaMode; // Bound state directly to instance creation frame
                 this.lastBloomPoint = {x: startX, y: startY};
                 this.lastDrawPoint = {x: startX, y: startY};
             }
@@ -378,17 +511,18 @@
                 if (distToLast > 12) {
                     this.points.push({x, y});
                     this.lastDrawPoint = {x, y};
-                    
                     const bx = x - this.lastBloomPoint.x;
                     const by = y - this.lastBloomPoint.y;
                     const distToBloom = Math.sqrt(bx*bx + by*by);
                     
                     if (distToBloom > 70) {
                         this.blooms.push({
-                            x: x, 
-                            y: y, 
-                            progress: 0,
-                            cachedImage: preRenderedFlowers[Math.floor(Math.random() * preRenderedFlowers.length)],
+                            x: x, y: y, progress: 0,
+                            driftX: 0, driftY: 0, alpha: 1,
+                            fallX: Math.random() * 0.6 + 0.4,
+                            fallY: Math.random() * 1.2 + 0.6,
+                            rotSpeed: (Math.random() - 0.5) * 0.03,
+                            cachedImage: preRenderedFlowers[this.isPink ? Math.floor(Math.random() * 6) : Math.floor(Math.random() * preRenderedFlowers.length)],
                             rotation: Math.random() * Math.PI * 2
                         });
                         this.lastBloomPoint = {x, y};
@@ -396,42 +530,54 @@
                 }
             }
             update() {
+                if (this.dissolving) {
+                    this.alpha -= 0.015; 
+                }
                 this.blooms.forEach(b => {
-                    if (b.progress < 1) b.progress += 0.015;
+                    if (this.dissolving) {
+                        b.alpha -= 0.007;
+                        b.driftX += b.fallX;
+                        b.driftY += b.fallY;
+                        b.rotation += b.rotSpeed;
+                    } else {
+                        if (b.progress < 1) b.progress += 0.015;
+                    }
                 });
             }
             draw() {
                 if (this.points.length < 2) return;
                 
                 ctx.save();
+                if (this.dissolving) {
+                    ctx.globalAlpha = Math.max(0, this.alpha);
+                }
                 ctx.beginPath();
                 ctx.moveTo(this.points[0].x, this.points[0].y);
                 for(let i = 1; i < this.points.length; i++) {
                     ctx.lineTo(this.points[i].x, this.points[i].y);
                 }
                 
-                ctx.strokeStyle = '#4ade80';
-                ctx.shadowColor = '#4ade80';
+                ctx.strokeStyle = this.isPink ? '#ff85a2' : '#4ade80';
+                ctx.shadowColor = this.isPink ? '#ff85a2' : '#4ade80';
                 ctx.shadowBlur = 10;
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.stroke();
-
-                ctx.shadowBlur = 0;
+                ctx.restore();
 
                 this.blooms.forEach(b => {
                     const bloomEase = easeOut(b.progress);
                     if (bloomEase > 0.01) {
-                        ctx.translate(b.x, b.y);
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, b.alpha);
+                        ctx.translate(b.x + b.driftX, b.y + b.driftY);
                         ctx.rotate(b.rotation);
                         const drawSize = cacheSize * bloomEase * 0.8; 
                         ctx.drawImage(b.cachedImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
-                        ctx.rotate(-b.rotation);
-                        ctx.translate(-b.x, -b.y);
+                        ctx.restore();
                     }
                 });
-                ctx.restore();
             }
         }
 
@@ -439,11 +585,25 @@
             ctx.clearRect(0, 0, width, height); 
             time++;
             
+            flowers = flowers.filter(f => !f.dissolving || f.alpha > 0);
+            vines = vines.filter(v => !v.dissolving || v.alpha > 0);
+
             fireflies.forEach(f => { f.update(); f.draw(); });
             flowers.forEach(flower => { flower.update(); flower.draw(); });
             vines.forEach(vine => { vine.update(); vine.draw(); });
-            dandelionSeeds.forEach(s => { s.update(); s.draw(); });
+            
+            if (blossomRainActive) {
+                if (time % 8 === 0 && cherryBlossoms.length < 100) {
+                    cherryBlossoms.push(new CherryBlossom());
+                }
+                cherryBlossoms.forEach((c, index) => {
+                    c.update();
+                    c.draw();
+                    if (c.y > height + 20 || c.x > width + 40) cherryBlossoms.splice(index, 1);
+                });
+            }
 
+            dandelionSeeds.forEach(s => { s.update(); s.draw(); });
             requestAnimationFrame(animate);
         }
 
@@ -451,6 +611,9 @@
         const uiBottom = document.getElementById('ui-bottom');
         const noteContainer = document.getElementById('note-container');
         const watermark = document.getElementById('watermark');
+        const mainNote = document.getElementById('main-note');
+        const secretModal = document.getElementById('secret-modal');
+        const secretInput = document.getElementById('secret-input');
 
         function revealSecretNote() {
             uiTop.style.opacity = '0';          
@@ -458,6 +621,102 @@
             uiBottom.style.opacity = '0.1';     
             watermark.style.opacity = '0.1';
         }
+
+        function activateUltimateManyaMode() {
+            isManyaMode = true;
+            blossomRainActive = true;
+            
+            document.body.style.background = 'radial-gradient(circle at center, #3a111c 0%, #050002 100%)';
+            mainNote.innerHTML = `Some gardens bloom for everyone...<br>This little one was always waiting for you, Manya. 🌸`;
+            mainNote.style.color = '#ffb3c6';
+            mainNote.style.textShadow = '0 0 25px rgba(255, 179, 198, 0.6)';
+            revealSecretNote();
+
+            // Force all active pre-existing screen features into the pink palette layout
+            flowers.forEach(f => {
+                f.cachedImage = preRenderedFlowers[Math.floor(Math.random() * 6)];
+                f.isPink = true;
+            });
+            vines.forEach(v => {
+                v.isPink = true;
+                v.blooms.forEach(b => b.cachedImage = preRenderedFlowers[Math.floor(Math.random() * 6)]);
+            });
+
+            const totalHeartFlowers = 45;
+            for (let i = 0; i < totalHeartFlowers; i++) {
+                setTimeout(() => {
+                    if (!isManyaMode) return;
+                    const t = (Math.PI * 2 / totalHeartFlowers) * i;
+                    const heartX = 16 * Math.pow(Math.sin(t), 3);
+                    const heartY = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                    
+                    const scaleFactor = Math.min(width, height) * 0.024;
+                    const targetCanvasX = width / 2 + (heartX * scaleFactor);
+                    const targetCanvasY = height * 0.48 - (heartY * scaleFactor);
+
+                    flowers.push(new Flower(targetCanvasX, targetCanvasY, true));
+                }, i * 130);
+            }
+
+            for(let j = 0; j < 50; j++) {
+                setTimeout(() => {
+                    if (!isManyaMode) return;
+                    const rX = Math.random() * width;
+                    const rY = height - (Math.random() * (height * 0.45) + 120);
+                    flowers.push(new Flower(rX, rY, true));
+                }, j * 80 + 2000);
+            }
+
+            setTimeout(() => {
+                blossomRainActive = false;
+                document.body.style.background = 'radial-gradient(circle at center, #111 0%, #000 100%)';
+                
+                mainNote.innerHTML = "Just wanted to leave a little corner of calm here.<br>Hope it made you smile, even if only for a minute. 🌸";
+                mainNote.style.color = '#ffe5ec';
+                mainNote.style.textShadow = '0 0 15px rgba(255, 179, 198, 0.3)';
+                
+                uiTop.style.opacity = '1';
+                uiBottom.style.opacity = '1';
+                watermark.style.opacity = '1';
+                noteContainer.style.opacity = '0';
+                
+                flowers.forEach(f => f.dissolving = true);
+                vines.forEach(v => v.dissolving = true);
+                
+                isManyaMode = false;
+                cherryBlossoms = [];
+            }, 15000);
+        }
+
+        watermark.addEventListener('click', () => {
+            watermarkClicks++;
+            if (watermarkClicks === 3) {
+                watermarkClicks = 0;
+                secretModal.style.opacity = '1';
+                secretModal.style.pointerEvents = 'auto';
+                secretInput.focus();
+            }
+        });
+
+        secretModal.addEventListener('click', (e) => {
+            if (e.target === secretModal) {
+                secretModal.style.opacity = '0';
+                secretModal.style.pointerEvents = 'none';
+                secretInput.blur();
+                secretInput.value = '';
+            }
+        });
+
+        secretInput.addEventListener('input', () => {
+            if (secretInput.value.toLowerCase() === 'manya') {
+                secretInput.blur(); 
+                secretModal.style.opacity = '0';
+                secretModal.style.pointerEvents = 'none';
+                secretInput.value = '';
+                startMusic();
+                activateUltimateManyaMode();
+            }
+        });
 
         let isDrawing = false;
         let currentVine = null;
@@ -480,7 +739,6 @@
         window.addEventListener('pointerup', (e) => {
             if (!isDrawing) return;
             isDrawing = false;
-            
             const dx = e.clientX - startPos.x;
             const dy = e.clientY - startPos.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -495,6 +753,10 @@
         document.getElementById('clearBtn').addEventListener('click', () => {
             flowers = [];
             vines = []; 
+            isManyaMode = false;
+            blossomRainActive = false;
+            cherryBlossoms = [];
+            document.body.style.background = 'radial-gradient(circle at center, #111 0%, #000 100%)';
             uiTop.style.opacity = '1';
             noteContainer.style.opacity = '0';
             uiBottom.style.opacity = '1';
