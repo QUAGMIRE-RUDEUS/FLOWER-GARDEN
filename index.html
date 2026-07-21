@@ -81,7 +81,7 @@
             font-weight: 300;
             text-shadow: 0 0 15px rgba(255, 179, 198, 0.4);
             font-style: italic;
-            transition: all 1s ease-in-out;
+            transition: opacity 1s ease-in-out;
         }
 
         #ui-bottom {
@@ -297,7 +297,7 @@
         const bgm = document.getElementById('bgm'); 
         bgm.volume = 0.5;
 
-        // Fullscreen Functionality for Twilight Mode Only
+        // Fullscreen Functionality for Twilight Mode
         function enableFullScreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 const doc = document.documentElement;
@@ -433,8 +433,8 @@
                 this.y += this.speedY + Math.cos(this.angle) * 0.2;
 
                 if (isSpecialMode && currentPhase >= PHASE_NAME_AWAKEN && currentPhase < PHASE_EXIT_TRANSITION) {
-                    const targetX = width * 0.502;
-                    const targetY = height * 0.765;
+                    const targetX = width * 0.5;
+                    const targetY = height * 0.58; // Positioned slightly below center
                     this.x += (targetX - this.x) * 0.002;
                     this.y += (targetY - this.y) * 0.002;
                 }
@@ -449,7 +449,6 @@
                 ctx.globalCompositeOperation = 'screen';
                 let scaleMult = isManyaMode ? 2.2 : (1 + 1.2 * specialBlend);
                 let currentScale = this.size * scaleMult;
-                const pulse = (Math.sin(time * 0.04 + this.angle) + 1) * 0.5;
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, currentScale * 4, 0, Math.PI * 2);
@@ -638,18 +637,22 @@
                 this.staticRotation = Math.random() * Math.PI * 2; 
             }
             update() {
+                // Dynamic parting logic: Flowers push OUTWARD away from name position (height * 0.58)
                 if (isSpecialMode && currentPhase >= PHASE_PART_FLOWERS && currentPhase < PHASE_SAND_DISSOLVE) {
-                    const hollowX = width * 0.502;
-                    const hollowY = height * 0.765;
-                    const dx = this.startX - hollowX;
-                    const dy = this.targetY - hollowY;
+                    const centerX = width * 0.5;
+                    const centerY = height * 0.58; // Right below exact center
+                    const headX = this.startX + this.partOffsetX;
+                    const headY = this.targetY + this.partOffsetY;
+                    const dx = headX - centerX;
+                    const dy = headY - centerY;
                     const dist = Math.hypot(dx, dy);
 
-                    if (dist < 180 && dist > 1) {
-                        const pushForce = (180 - dist) / 180;
-                        const angle = Math.atan2(dy, dx);
-                        this.partOffsetX += Math.cos(angle) * pushForce * 0.6;
-                        this.partOffsetY += Math.sin(angle) * pushForce * 0.3;
+                    const clearRadius = 150; 
+                    if (dist < clearRadius) {
+                        const pushForce = (clearRadius - dist) / clearRadius;
+                        const angle = (dist < 0.1) ? (Math.random() * Math.PI * 2) : Math.atan2(dy, dx);
+                        this.partOffsetX += Math.cos(angle) * pushForce * 1.5;
+                        this.partOffsetY += Math.sin(angle) * pushForce * 1.0;
                     }
                 }
 
@@ -810,12 +813,13 @@
             }
         }
 
+        // Render Name & Glow right below center (width * 0.5, height * 0.58)
         function drawTreeCarvingGlow() {
-            const hollowX = width * 0.502;
-            const hollowY = height * 0.765;
+            const centerX = width * 0.5;
+            const centerY = height * 0.58; // Positioned right below the center
 
             if (currentPhase >= PHASE_NAME_AWAKEN && currentPhase < PHASE_EXIT_TRANSITION && Math.random() < 0.45) {
-                nameLightDots.push(new NameLightDot(hollowX, hollowY));
+                nameLightDots.push(new NameLightDot(centerX, centerY));
             }
 
             if (engravingAlpha <= 0) return;
@@ -823,7 +827,7 @@
             ctx.save();
             ctx.globalCompositeOperation = 'screen';
 
-            const radGrad = ctx.createRadialGradient(hollowX, hollowY, 0, hollowX, hollowY, 120);
+            const radGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 130);
             const intensity = (0.6 + Math.sin(time * 0.035) * 0.15) * engravingGlowIntensity;
             radGrad.addColorStop(0, `rgba(254, 240, 138, ${0.52 * engravingAlpha * intensity})`);
             radGrad.addColorStop(0.45, `rgba(245, 158, 11, ${0.28 * engravingAlpha * intensity})`);
@@ -831,15 +835,15 @@
             
             ctx.fillStyle = radGrad;
             ctx.beginPath();
-            ctx.arc(hollowX, hollowY, 120, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, 130, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.font = 'italic 300 21px Georgia, "Times New Roman", serif';
+            ctx.font = 'italic 300 24px Georgia, "Times New Roman", serif';
             ctx.textAlign = 'center';
             ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 18 * intensity;
+            ctx.shadowBlur = 20 * intensity;
             ctx.fillStyle = `rgba(255, 248, 220, ${0.92 * engravingAlpha})`;
-            ctx.fillText("Avi  ♥  Sanjana", hollowX, hollowY + 6);
+            ctx.fillText("Avi  ♥  Sanjana", centerX, centerY + 8);
 
             ctx.restore();
         }
@@ -910,7 +914,8 @@
                     if (engravingAlpha < 1.0) engravingAlpha += 0.01;
                     if (engravingGlowIntensity < 1.0) engravingGlowIntensity += 0.012;
 
-                    noteContainer.style.opacity = Math.max(0.35, (1.0 - engravingAlpha * 0.65)).toFixed(2);
+                    // Quote line fades out completely as the name awakens
+                    noteContainer.style.opacity = Math.max(0, (1.0 - engravingAlpha)).toFixed(2);
 
                     if (phaseTimer > 360) {
                         currentPhase = PHASE_SAND_DISSOLVE;
@@ -1000,6 +1005,7 @@
             watermark.style.opacity = '0.1';
         }
 
+        // Spawn Flowers across lower/mid field height (never reaching top quote)
         function spawnNaturalFieldBlooms() {
             const totalFieldCount = 110;
             for (let i = 0; i < totalFieldCount; i++) {
@@ -1007,11 +1013,12 @@
                     if (!isSpecialMode) return;
                     const fieldX = Math.random() * (width * 0.96) + (width * 0.02);
                     const depthFactor = Math.random();
-                    const fieldY = height - (depthFactor * (height * 0.38) + 40);
+                    // Max height capped at 45% of screen height from bottom (safely below top quote)
+                    const fieldY = height - (depthFactor * (height * 0.45) + 30);
                     const scaleFactor = 0.42 + (depthFactor * 0.48);
 
                     flowers.push(new Flower(fieldX, fieldY, false, true, scaleFactor));
-                }, i * 60);
+                }, i * 45);
             }
         }
 
@@ -1093,7 +1100,7 @@
             engravingGlowIntensity = 0;
             blossomRainActive = true;
 
-            enableFullScreen(); // Enter Fullscreen Mode ONLY in Twilight Mode
+            enableFullScreen();
 
             flowers.forEach(f => f.dissolving = true);
             vines.forEach(v => v.dissolving = true);
@@ -1155,12 +1162,12 @@
             startPos = {x: e.clientX, y: e.clientY};
 
             if (isSpecialMode && (currentPhase === PHASE_NAME_AWAKEN || currentPhase === PHASE_SAND_DISSOLVE || currentPhase === PHASE_TIMELESS_HOLD)) {
-                const hollowX = width * 0.502;
-                const hollowY = height * 0.765;
-                const dx = e.clientX - hollowX;
-                const dy = e.clientY - hollowY;
+                const centerX = width * 0.5;
+                const centerY = height * 0.58; // Detection centered at name location
+                const dx = e.clientX - centerX;
+                const dy = e.clientY - centerY;
 
-                if (Math.hypot(dx, dy) < 110) {
+                if (Math.hypot(dx, dy) < 130) {
                     triggerExitToStandard();
                     return;
                 }
