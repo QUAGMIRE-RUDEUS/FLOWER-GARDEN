@@ -2,7 +2,7 @@
 <html lang="en" style="background-color: #000;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
     <title>Flower Garden For You</title>
     <style>
@@ -18,6 +18,9 @@
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
             height: 100vh;
+            width: 100vw;
+            user-select: none;
+            -webkit-user-select: none;
             transition: background 2.5s ease-in-out;
         }
 
@@ -48,7 +51,7 @@
         
         #ui-top {
             position: absolute;
-            top: 8%;
+            top: calc(8% + env(safe-area-inset-top));
             width: 100%;
             text-align: center;
             z-index: 10;
@@ -61,7 +64,7 @@
 
         #note-container {
             position: absolute;
-            top: 9%;
+            top: calc(9% + env(safe-area-inset-top));
             width: 100%;
             text-align: center;
             z-index: 10;
@@ -83,7 +86,7 @@
 
         #ui-bottom {
             position: absolute;
-            bottom: 8%; 
+            bottom: calc(8% + env(safe-area-inset-bottom)); 
             width: 100%;
             display: flex;
             gap: 15px;
@@ -118,7 +121,7 @@
 
         #watermark {
             position: absolute;
-            bottom: 2%;
+            bottom: calc(2% + env(safe-area-inset-bottom));
             width: 100%;
             text-align: center;
             font-size: 0.85rem;
@@ -250,7 +253,7 @@
         
         let isManyaMode = false;
         let isSpecialMode = false;
-        let specialBlend = 0; // Smooth transition factor between 0.0 and 1.0
+        let specialBlend = 0;
         let watermarkClicks = 0;
         let blossomRainActive = false;
 
@@ -293,6 +296,18 @@
         let isMusicPlaying = false;
         const bgm = document.getElementById('bgm'); 
         bgm.volume = 0.5;
+
+        // Fullscreen Functionality for Twilight Mode Only
+        function enableFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) {
+                    doc.requestFullscreen().catch(() => {});
+                } else if (doc.webkitRequestFullscreen) {
+                    doc.webkitRequestFullscreen();
+                }
+            }
+        }
 
         function startMusic() {
             if (!isMusicPlaying) {
@@ -833,7 +848,7 @@
             if (currentPhase === PHASE_EXIT_TRANSITION) return;
             currentPhase = PHASE_EXIT_TRANSITION;
             phaseTimer = 0;
-            blossomRainActive = false; // Stop spawning new special blossoms
+            blossomRainActive = false;
 
             diagonalDots = [];
             for (let i = 0; i < 160; i++) {
@@ -866,7 +881,6 @@
             ctx.clearRect(0, 0, width, height); 
             time++;
 
-            // Smooth Blend Factor Management
             if (isSpecialMode && currentPhase !== PHASE_EXIT_TRANSITION) {
                 if (specialBlend < 1) specialBlend += 0.015;
             } else {
@@ -1078,6 +1092,8 @@
             engravingAlpha = 0;
             engravingGlowIntensity = 0;
             blossomRainActive = true;
+
+            enableFullScreen(); // Enter Fullscreen Mode ONLY in Twilight Mode
 
             flowers.forEach(f => f.dissolving = true);
             vines.forEach(v => v.dissolving = true);
