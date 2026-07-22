@@ -231,9 +231,7 @@
         </div>
     </div>
 
-    <audio id="bgm" loop>
-        <source src="dandelions.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bgm" loop src="dandelions.mp3"></audio>
 
     <canvas id="garden"></canvas>
 
@@ -311,6 +309,11 @@
 
         function startMusic() {
             if (!isMusicPlaying) {
+                if (!bgm.src || bgm.src.includes('die')) {
+                    bgm.pause();
+                    bgm.src = 'dandelions.mp3';
+                    bgm.currentTime = 0;
+                }
                 bgm.play().then(() => {
                     isMusicPlaying = true;
                 }).catch(err => console.log(err));
@@ -434,7 +437,7 @@
 
                 if (isSpecialMode && currentPhase >= PHASE_NAME_AWAKEN && currentPhase < PHASE_EXIT_TRANSITION) {
                     const targetX = width * 0.5;
-                    const targetY = height * 0.58; // Positioned slightly below center
+                    const targetY = height * 0.58; 
                     this.x += (targetX - this.x) * 0.002;
                     this.y += (targetY - this.y) * 0.002;
                 }
@@ -637,10 +640,10 @@
                 this.staticRotation = Math.random() * Math.PI * 2; 
             }
             update() {
-                // Dynamic parting logic: Flowers push OUTWARD away from name position (height * 0.58)
-                if (isSpecialMode && currentPhase >= PHASE_PART_FLOWERS && currentPhase < PHASE_SAND_DISSOLVE) {
+                // Dynamic parting logic: Flowers originally bloomed over the entire field push OUTWARD away from name position (height * 0.58)
+                if (currentPhase >= PHASE_PART_FLOWERS && currentPhase < PHASE_SAND_DISSOLVE) {
                     const centerX = width * 0.5;
-                    const centerY = height * 0.58; // Right below exact center
+                    const centerY = height * 0.58; 
                     const headX = this.startX + this.partOffsetX;
                     const headY = this.targetY + this.partOffsetY;
                     const dx = headX - centerX;
@@ -813,10 +816,9 @@
             }
         }
 
-        // Render Name & Glow right below center (width * 0.5, height * 0.58)
         function drawTreeCarvingGlow() {
             const centerX = width * 0.5;
-            const centerY = height * 0.58; // Positioned right below the center
+            const centerY = height * 0.58; 
 
             if (currentPhase >= PHASE_NAME_AWAKEN && currentPhase < PHASE_EXIT_TRANSITION && Math.random() < 0.45) {
                 nameLightDots.push(new NameLightDot(centerX, centerY));
@@ -850,9 +852,17 @@
 
         function triggerExitToStandard() {
             if (currentPhase === PHASE_EXIT_TRANSITION) return;
+            
+            isSpecialMode = false; // Immediately restore standard mode logic
             currentPhase = PHASE_EXIT_TRANSITION;
             phaseTimer = 0;
             blossomRainActive = false;
+
+            // Stop Twilight Mode music and reset audio for Standard Mode
+            bgm.pause();
+            bgm.currentTime = 0;
+            bgm.src = "dandelions.mp3";
+            isMusicPlaying = false;
 
             diagonalDots = [];
             for (let i = 0; i < 160; i++) {
@@ -891,7 +901,7 @@
                 if (specialBlend > 0) specialBlend -= 0.01;
             }
 
-            if (isSpecialMode) {
+            if (currentPhase !== PHASE_NORMAL) {
                 phaseTimer++;
 
                 if (currentPhase === PHASE_TRANSITION_IN && phaseTimer > 150) {
@@ -914,7 +924,6 @@
                     if (engravingAlpha < 1.0) engravingAlpha += 0.01;
                     if (engravingGlowIntensity < 1.0) engravingGlowIntensity += 0.012;
 
-                    // Quote line fades out completely as the name awakens
                     noteContainer.style.opacity = Math.max(0, (1.0 - engravingAlpha)).toFixed(2);
 
                     if (phaseTimer > 360) {
@@ -947,8 +956,7 @@
                     diagonalDots.forEach(dd => { dd.update(); dd.draw(); });
                     diagonalDots = diagonalDots.filter(dd => dd.alpha > 0);
 
-                    if (phaseTimer > 180 && diagonalDots.length === 0 && specialBlend === 0) {
-                        isSpecialMode = false;
+                    if (phaseTimer > 180 && diagonalDots.length === 0 && specialBlend <= 0) {
                         currentPhase = PHASE_NORMAL;
                         sandParticles = [];
                         nameLightDots = [];
@@ -959,7 +967,7 @@
             flowers = flowers.filter(f => !f.dissolving || f.alpha > 0);
             vines = vines.filter(v => !v.dissolving || v.alpha > 0);
 
-            if (isSpecialMode) {
+            if (currentPhase !== PHASE_NORMAL) {
                 sandParticles.forEach(sp => { sp.update(); sp.draw(); });
                 sandParticles = sandParticles.filter(sp => sp.alpha > 0);
 
@@ -982,7 +990,7 @@
                 });
             }
 
-            if (isSpecialMode) {
+            if (currentPhase !== PHASE_NORMAL) {
                 drawTreeCarvingGlow();
             }
 
@@ -1005,20 +1013,30 @@
             watermark.style.opacity = '0.1';
         }
 
-        // Spawn Flowers across lower/mid field height (never reaching top quote)
+        // Spawn Flowers across full field including directly OVER center name area initially (no gap/hole upfront)
         function spawnNaturalFieldBlooms() {
-            const totalFieldCount = 110;
+            const totalFieldCount = 120;
+            const centerX = width * 0.5;
+            const centerY = height * 0.58;
+
             for (let i = 0; i < totalFieldCount; i++) {
                 setTimeout(() => {
-                    if (!isSpecialMode) return;
-                    const fieldX = Math.random() * (width * 0.96) + (width * 0.02);
-                    const depthFactor = Math.random();
-                    // Max height capped at 45% of screen height from bottom (safely below top quote)
-                    const fieldY = height - (depthFactor * (height * 0.45) + 30);
-                    const scaleFactor = 0.42 + (depthFactor * 0.48);
+                    if (currentPhase === PHASE_NORMAL) return;
+                    let fieldX, fieldY;
 
+                    // 1/3 of flowers bloom directly on/around the name location to ensure full initial coverage
+                    if (i % 3 === 0) {
+                        fieldX = centerX + (Math.random() - 0.5) * 260;
+                        fieldY = centerY + (Math.random() - 0.5) * 160;
+                    } else {
+                        fieldX = Math.random() * (width * 0.96) + (width * 0.02);
+                        const depthFactor = Math.random();
+                        fieldY = height - (depthFactor * (height * 0.48) + 30);
+                    }
+
+                    const scaleFactor = 0.42 + Math.random() * 0.45;
                     flowers.push(new Flower(fieldX, fieldY, false, true, scaleFactor));
-                }, i * 45);
+                }, i * 40);
             }
         }
 
@@ -1027,6 +1045,11 @@
             isSpecialMode = false;
             specialBg.classList.remove('active');
             blossomRainActive = true;
+
+            bgm.pause();
+            bgm.src = "dandelions.mp3";
+            bgm.currentTime = 0;
+            bgm.play().then(() => { isMusicPlaying = true; }).catch(err => console.log(err));
             
             document.body.style.background = 'radial-gradient(circle at center, #3a111c 0%, #050002 100%)';
             mainNote.innerHTML = `Some gardens bloom for everyone...<br>This little one was always waiting for you, Manya. 🌸`;
@@ -1102,6 +1125,12 @@
 
             enableFullScreen();
 
+            // Switch audio to "die with a smile.mp3" for Twilight Mode
+            bgm.pause();
+            bgm.src = "die with a smile.mp3";
+            bgm.currentTime = 0;
+            bgm.play().then(() => { isMusicPlaying = true; }).catch(err => console.log(err));
+
             flowers.forEach(f => f.dissolving = true);
             vines.forEach(v => v.dissolving = true);
 
@@ -1139,14 +1168,12 @@
                 secretModal.style.opacity = '0';
                 secretModal.style.pointerEvents = 'none';
                 secretInput.value = '';
-                startMusic();
                 activateUltimateManyaMode();
             } else if (val === 'sanju&avi' || val === 'avi&sanju' || val === 'sanjana&avi' || val === 'avi&sanjana') {
                 secretInput.blur(); 
                 secretModal.style.opacity = '0';
                 secretModal.style.pointerEvents = 'none';
                 secretInput.value = '';
-                startMusic();
                 activateSpecialMode();
             }
         });
@@ -1161,9 +1188,9 @@
             isDrawing = true;
             startPos = {x: e.clientX, y: e.clientY};
 
-            if (isSpecialMode && (currentPhase === PHASE_NAME_AWAKEN || currentPhase === PHASE_SAND_DISSOLVE || currentPhase === PHASE_TIMELESS_HOLD)) {
+            if (currentPhase === PHASE_NAME_AWAKEN || currentPhase === PHASE_SAND_DISSOLVE || currentPhase === PHASE_TIMELESS_HOLD) {
                 const centerX = width * 0.5;
-                const centerY = height * 0.58; // Detection centered at name location
+                const centerY = height * 0.58; 
                 const dx = e.clientX - centerX;
                 const dy = e.clientY - centerY;
 
@@ -1178,7 +1205,7 @@
         });
 
         canvas.addEventListener('pointermove', (e) => {
-            if (!isDrawing || currentPhase === PHASE_EXIT_TRANSITION) return;
+            if (!isDrawing) return;
             if (currentVine) currentVine.addPoint(e.clientX, e.clientY);
         });
 
@@ -1189,7 +1216,7 @@
             const dy = e.clientY - startPos.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             
-            if (dist < 10 && currentPhase !== PHASE_EXIT_TRANSITION) {
+            if (dist < 10) {
                 if (currentVine) vines.pop(); 
                 flowers.push(new Flower(e.clientX, e.clientY)); 
             }
@@ -1210,6 +1237,11 @@
             specialBg.classList.remove('active');
             blossomRainActive = false;
             cherryBlossoms = [];
+
+            bgm.pause();
+            bgm.currentTime = 0;
+            bgm.src = "dandelions.mp3";
+            isMusicPlaying = false;
             
             document.body.style.background = 'radial-gradient(circle at center, #111 0%, #000 100%)';
             uiTop.style.opacity = '1';
