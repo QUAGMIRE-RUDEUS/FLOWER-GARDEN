@@ -6,6 +6,8 @@
     <meta name="color-scheme" content="dark">
     <title>Flower Garden For You</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400&display=swap');
+
         html, body {
             background-color: #000;
             color-scheme: dark;
@@ -195,6 +197,768 @@
             touch-action: none; 
             z-index: 3;
         }
+
+        /* ==========================================
+           MANYA MODE - CINEMATIC MIDNIGHT STYLES
+           ========================================== */
+        .manya-mode#manya-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0F172A 0%, #070B14 100%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            contain: layout style paint;
+            transform: translateZ(0);
+            will-change: opacity, transform;
+        }
+
+        .manya-mode#manya-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .manya-mode#manya-overlay.manya-disabled {
+            display: none !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
+        .manya-mode .manya-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 40%, rgba(3, 5, 10, 0.85) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .manya-mode canvas#manya-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Scene Containers */
+        .manya-mode .manya-scene {
+            position: absolute;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.2s ease-in-out;
+            contain: layout style paint;
+            transform: translateZ(0);
+            will-change: opacity, transform;
+        }
+
+        .manya-mode .manya-scene.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* SCENE 1 */
+        .manya-mode #manya-scene-1 {
+            padding: 0 24px;
+            max-width: 600px;
+            transform: translateY(18px) translateZ(0);
+            transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1), transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .manya-mode #manya-scene-1.active {
+            transform: translateY(0) translateZ(0);
+        }
+
+        .manya-mode .manya-quote {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 300;
+            font-style: italic;
+            color: #F8F5EC;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: manyaQuoteGlow 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes manyaQuoteGlow {
+            0% {
+                text-shadow: 0 0 15px rgba(248, 245, 236, 0.12);
+            }
+            100% {
+                text-shadow: 0 0 28px rgba(248, 245, 236, 0.28), 0 0 45px rgba(212, 175, 55, 0.18);
+            }
+        }
+
+        .manya-mode .manya-gold-line {
+            width: 140px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 2.6s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+            margin-bottom: 40px;
+            will-change: transform;
+        }
+
+        .manya-mode#manya-overlay.active #manya-scene-1.active .manya-gold-line {
+            transform: scaleX(1);
+        }
+
+        .manya-mode .manya-enter-btn {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #F8F5EC;
+            background: transparent;
+            border: 1px solid #D4AF37;
+            padding: 14px 42px;
+            border-radius: 40px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 0px rgba(212, 175, 55, 0);
+        }
+
+        .manya-mode .manya-enter-btn:hover,
+        .manya-mode .manya-enter-btn:active {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: #F59E0B;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+
+        /* SCENE 2 - Desk & Envelope Layout */
+        .manya-mode .manya-desk-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 25%, rgba(255, 190, 120, 0.22) 0%, rgba(35, 23, 16, 0.95) 55%, #0b0705 100%);
+            opacity: 0;
+            z-index: 2;
+            transition: opacity 1.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        .manya-mode .manya-desk-bg.active {
+            opacity: 1;
+        }
+
+        .manya-mode .manya-envelope-container {
+            perspective: 1000px;
+            -webkit-perspective: 1000px;
+            width: 320px;
+            height: 210px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .manya-mode .manya-envelope {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .manya-mode .manya-envelope.open {
+            transform: translateY(30px);
+        }
+
+        .manya-mode .manya-envelope-back,
+        .manya-mode .manya-envelope-front {
+            position: absolute;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            border-radius: 6px;
+        }
+
+        .manya-mode .manya-envelope-back {
+            background: #EAE3D2;
+            background-image: 
+                linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(0,0,0,0.05)),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px);
+            z-index: 1;
+        }
+
+        .manya-mode .manya-envelope-front {
+            background: #F4EFE6;
+            clip-path: polygon(0 0, 50% 45%, 100% 0, 100% 100%, 0 100%);
+            background-image: 
+                linear-gradient(135deg, #fdfbf7 0%, #e3dbc9 100%),
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 2px, transparent 2px, transparent 4px);
+            z-index: 3;
+        }
+
+        .manya-mode .manya-envelope-flap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #E5DDD0;
+            background-image: linear-gradient(to bottom, #F8F5EC, #DDD3C3);
+            clip-path: polygon(0 0, 100% 0, 50% 52%);
+            transform-origin: top;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 4;
+        }
+
+        .manya-mode .manya-envelope.open .manya-envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .manya-mode .manya-wax-seal {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -20%);
+            width: 48px; height: 48px;
+            background: radial-gradient(circle at 30% 30%, #a82424, #610e0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 6px rgba(255,255,255,0.2);
+            cursor: pointer;
+            z-index: 5;
+            transition: all 0.4s ease;
+
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .manya-mode .manya-wax-seal:hover {
+            transform: translate(-50%, -20%) scale(1.08);
+            box-shadow: 0 6px 15px rgba(168, 36, 36, 0.4), inset 0 0 8px rgba(255,255,255,0.3);
+        }
+
+        .manya-mode .manya-wax-seal:focus,
+        .manya-mode .manya-wax-seal:focus-visible,
+        .manya-mode .manya-wax-seal:active {
+            outline: none !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 6px rgba(255,255,255,0.2);
+        }
+
+        .manya-mode .manya-wax-letter {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #D4AF37;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            user-select: none;
+        }
+
+        .manya-mode .manya-envelope.open .manya-wax-seal {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -20%) scale(0.5);
+        }
+
+        .manya-mode .manya-letter {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: calc(100% - 30px);
+            height: 190px;
+            background: #FAF7F2;
+            background-image: 
+                linear-gradient(to bottom, #FAF7F2, #F3EDE2),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px);
+            border-radius: 6px;
+            padding: 24px 20px 20px 20px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            z-index: 2;
+            
+            transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, 
+                        height 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s,
+                        z-index 0s linear 0.5s;
+            
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            isolation: isolate;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+        }
+
+        .manya-mode .manya-envelope.open .manya-letter {
+            transform: translate3d(0, -150px, 0);
+            height: 250px !important;
+            z-index: 5;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Hide letter text completely until envelope opens */
+        .manya-mode .manya-letter-salutation,
+        .manya-mode .manya-letter-body {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease 0.9s, visibility 0.6s ease 0.9s;
+        }
+
+        .manya-mode .manya-envelope.open .manya-letter-salutation,
+        .manya-mode .manya-envelope.open .manya-letter-body {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .manya-mode .manya-letter-salutation {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.4rem !important;
+            font-weight: 500 !important;
+            color: #2C1D11 !important;
+            margin: 0 0 12px 0 !important;
+            padding: 0 !important;
+            line-height: 1.2 !important;
+            display: block !important;
+        }
+
+        .manya-mode .manya-letter-body {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem !important;
+            font-weight: 300 !important;
+            color: #4A3B32 !important;
+            line-height: 1.6 !important;
+            white-space: pre-line !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+            display: block !important;
+        }
+
+        .manya-mode .manya-letter-body::after {
+            content: '|';
+            color: #D4AF37;
+            animation: manyaBlink 0.8s infinite;
+        }
+
+        .manya-mode .manya-letter-body.done::after {
+            display: none;
+        }
+
+        @keyframes manyaBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* SCENE 3 - Secret Name Recognition */
+        .manya-mode #manya-scene-3 {
+            background: #04060A;
+        }
+
+        .manya-mode .manya-secret-box {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .manya-mode .manya-input-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            transition: opacity 1.2s ease, transform 1.2s ease;
+        }
+
+        .manya-mode .manya-input-stage.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .manya-mode .manya-input-subtitle {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(0.95rem, 2.8vw, 1.15rem);
+            font-weight: 300;
+            font-style: italic;
+            color: rgba(212, 175, 55, 0.65);
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .manya-mode .manya-name-input {
+            width: 260px;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #F8F5EC;
+            text-align: center;
+            letter-spacing: 2px;
+            padding: 8px 0;
+        }
+
+        .manya-mode .manya-name-input::placeholder {
+            color: rgba(212, 175, 55, 0.4);
+            font-style: italic;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        .manya-mode .manya-input-underline {
+            width: 160px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+            transition: width 0.4s ease, background 0.4s ease;
+        }
+
+        .manya-mode .manya-name-input:focus + .manya-input-underline {
+            width: 240px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+        }
+
+        .manya-mode .manya-reveal-stage {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s ease 0.6s;
+        }
+
+        .manya-mode .manya-reveal-stage.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .manya-mode .manya-glow-sphere {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.04) 50%, transparent 70%);
+            transform: scale(0.2);
+            opacity: 0;
+            transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease;
+            pointer-events: none;
+            z-index: 1;
+            contain: layout style paint;
+            will-change: opacity, transform;
+        }
+
+        .manya-mode .manya-reveal-stage.active .manya-glow-sphere {
+            transform: scale(1.8);
+            opacity: 1;
+        }
+
+        .manya-mode canvas#manya-shimmer-canvas {
+            position: absolute;
+            width: 400px;
+            height: 300px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .manya-mode .manya-word-reveal {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(2.8rem, 8vw, 4.2rem);
+            font-weight: 300;
+            letter-spacing: 12px;
+            color: #F8F5EC;
+            text-shadow: 0 0 25px rgba(212, 175, 55, 0.4), 0 0 50px rgba(212, 175, 55, 0.2);
+            margin-bottom: 18px;
+            z-index: 3;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 2.5s ease 1s, transform 2.5s ease 1s;
+        }
+
+        .manya-mode .manya-reveal-stage.active .manya-word-reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .manya-mode .manya-response-text {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+            font-weight: 300;
+            font-style: italic;
+            color: rgba(248, 245, 236, 0.85);
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 2.5s ease 2.2s;
+        }
+
+        .manya-mode .manya-reveal-stage.active .manya-response-text {
+            opacity: 1;
+        }
+
+        /* SCENE 4 - Final Quiet Ending with Interactive Constellation */
+        .manya-mode #manya-scene-4 {
+            background: radial-gradient(circle at center, #0F172A 0%, #070B14 100%);
+        }
+
+        .manya-mode .manya-star-group {
+            position: absolute;
+            top: 14%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            z-index: 10;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        .manya-mode .manya-bright-star {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: #FFF8DC;
+            border-radius: 50%;
+            box-shadow: 0 0 12px 3px rgba(254, 240, 138, 0.9),
+                        0 0 35px 8px rgba(212, 175, 55, 0.5),
+                        0 0 75px 18px rgba(212, 175, 55, 0.2);
+            animation: manyaBrightPulse 4s ease-in-out infinite alternate;
+            contain: layout style paint;
+            will-change: opacity, transform;
+        }
+
+        .manya-mode .manya-bright-star.manya-star-brightened {
+            transform: translate(-50%, -50%) scale(2.2) !important;
+            box-shadow: 0 0 25px 8px rgba(254, 240, 138, 1),
+                        0 0 60px 18px rgba(212, 175, 55, 0.8) !important;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        @keyframes manyaBrightPulse {
+            0% {
+                opacity: 0.55;
+                transform: translate(-50%, -50%) scale(0.85);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.35);
+            }
+        }
+
+        .manya-mode .manya-constellation-star {
+            position: absolute;
+            background: #FFF8DC;
+            border-radius: 50%;
+            opacity: 0.35;
+            box-shadow: 0 0 5px rgba(254, 240, 138, 0.4);
+            animation: manyaTwinkle 3.5s ease-in-out infinite alternate;
+        }
+
+        .manya-mode .manya-constellation-star.manya-star-ripple {
+            opacity: 0.9 !important;
+            box-shadow: 0 0 12px rgba(254, 240, 138, 0.9) !important;
+            transition: opacity 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .manya-mode .c-star-1 { width: 2px; height: 2px; top: 38px; left: 24px; animation-delay: 0.2s; }
+        .manya-mode .c-star-2 { width: 1.5px; height: 1.5px; top: 30px; left: 86px; animation-delay: 1.1s; opacity: 0.25; }
+        .manya-mode .c-star-3 { width: 2px; height: 2px; top: 78px; left: 16px; animation-delay: 0.7s; }
+        .manya-mode .c-star-4 { width: 1.5px; height: 1.5px; top: 84px; left: 94px; animation-delay: 1.8s; opacity: 0.25; }
+        .manya-mode .c-star-5 { width: 1.5px; height: 1.5px; top: 18px; left: 54px; animation-delay: 2.3s; opacity: 0.35; }
+        .manya-mode .c-star-6 { width: 2px; height: 2px; top: 92px; left: 46px; animation-delay: 1.4s; }
+
+        @keyframes manyaTwinkle {
+            0% { opacity: 0.15; transform: scale(0.85); }
+            100% { opacity: 0.6; transform: scale(1.15); }
+        }
+
+        .manya-mode .manya-final-content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+            height: 72vh;
+            max-width: 520px;
+            padding: 0 24px;
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .manya-mode .manya-final-content.manya-fade-out {
+            opacity: 0 !important;
+            transform: translateY(-15px) !important;
+            pointer-events: none;
+        }
+
+        .manya-mode .manya-final-quote {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.25rem, 3.8vw, 1.8rem);
+            font-weight: 300;
+            font-style: italic;
+            color: #F8F5EC;
+            line-height: 1.85;
+            letter-spacing: 0.8px;
+            text-shadow: 0 0 20px rgba(248, 245, 236, 0.2);
+            margin-top: auto;
+            margin-bottom: auto;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 3.5s ease 0.8s, transform 3.5s ease 0.8s;
+        }
+
+        .manya-mode #manya-scene-4.active .manya-final-quote {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .manya-mode .manya-final-dedication {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 3.5s ease 3.8s;
+            margin-bottom: 24px;
+        }
+
+        .manya-mode #manya-scene-4.active .manya-final-dedication {
+            opacity: 1;
+        }
+
+        .manya-mode .manya-for-line {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+            color: #D4AF37;
+        }
+
+        .manya-mode .manya-sub-line {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            font-style: italic;
+            letter-spacing: 1.5px;
+            color: rgba(248, 245, 236, 0.65);
+        }
+
+        .manya-mode .manya-author-line {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: rgba(248, 245, 236, 0.85);
+            margin-top: 4px;
+        }
+
+        .manya-mode canvas#manya-exit-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* Responsive Overrides */
+        @media (max-width: 768px) {
+            .manya-mode .manya-bright-star {
+                box-shadow: 0 0 8px 2px rgba(254, 240, 138, 0.8),
+                            0 0 20px 4px rgba(212, 175, 55, 0.4);
+            }
+            
+            .manya-mode .manya-word-reveal {
+                text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            }
+            
+            .manya-mode .manya-envelope {
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .manya-mode .manya-envelope-container {
+                width: 290px;
+                height: 190px;
+            }
+            .manya-mode .manya-letter {
+                width: calc(100% - 24px);
+                left: 12px;
+                padding: 20px 16px 16px 16px !important;
+            }
+            .manya-mode .manya-envelope.open .manya-letter {
+                transform: translate3d(0, -140px, 0);
+                height: 235px !important;
+            }
+            .manya-mode .manya-letter-salutation {
+                font-size: 1.25rem !important;
+                margin-bottom: 8px !important;
+            }
+            .manya-mode .manya-letter-body {
+                font-size: 0.82rem !important;
+                line-height: 1.5 !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .manya-mode *,
+            .manya-mode *::before,
+            .manya-mode *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .manya-mode .manya-gold-line {
+                transform: scaleX(1) !important;
+            }
+
+            .manya-mode .manya-glow-sphere {
+                transform: scale(1.5) !important;
+                opacity: 0.8 !important;
+            }
+        }
     </style>
 </head>
 <body style="background-color: #000;">
@@ -228,6 +992,84 @@
         <div class="modal-content">
             <h3>SECRET CODE</h3>
             <input type="text" id="secret-input" placeholder="[. TYPE HERE .]" autocomplete="off" autocapitalize="off">
+        </div>
+    </div>
+
+    <!-- Manya Mode Overlay -->
+    <div id="manya-overlay" class="manya-mode">
+        <div class="manya-vignette"></div>
+        <div class="manya-desk-bg" id="manya-desk-bg"></div>
+        <canvas id="manya-stars"></canvas>
+
+        <!-- SCENE 1: Midnight Quote -->
+        <div id="manya-scene-1" class="manya-scene">
+            <blockquote class="manya-quote">
+                “Some names are spoken.<br>
+                Yours was written into the night.”
+            </blockquote>
+            <div class="manya-gold-line"></div>
+            <button id="manya-enter-btn" class="manya-enter-btn">Enter</button>
+        </div>
+
+        <!-- SCENE 2: Warm Desk & Envelope -->
+        <div id="manya-scene-2" class="manya-scene">
+            <div class="manya-envelope-container">
+                <div id="manya-envelope" class="manya-envelope">
+                    <div class="manya-envelope-back"></div>
+                    <div id="manya-letter" class="manya-letter">
+                        <h3 class="manya-letter-salutation">Dear Manya,</h3>
+                        <p id="manya-letter-body" class="manya-letter-body"></p>
+                    </div>
+                    <div class="manya-envelope-flap" id="manya-envelope-flap"></div>
+                    <div class="manya-envelope-front"></div>
+                    <div id="manya-wax-seal" class="manya-wax-seal" title="Click to open">
+                        <span class="manya-wax-letter">M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 3: Secret Name Recognition -->
+        <div id="manya-scene-3" class="manya-scene">
+            <div class="manya-secret-box">
+                <div id="manya-input-stage" class="manya-input-stage">
+                    <p class="manya-input-subtitle">One name belongs to this night.</p>
+                    <input type="text" id="manya-name-input" class="manya-name-input" placeholder="Write your name" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                    <div class="manya-input-underline"></div>
+                </div>
+                <div id="manya-reveal-stage" class="manya-reveal-stage">
+                    <div id="manya-glow-sphere" class="manya-glow-sphere"></div>
+                    <canvas id="manya-shimmer-canvas"></canvas>
+                    <h1 id="manya-word-reveal" class="manya-word-reveal">MANYA</h1>
+                    <p id="manya-response-text" class="manya-response-text">There. The night recognizes you too.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 4: Final Quiet Ending with Constellation -->
+        <div id="manya-scene-4" class="manya-scene">
+            <div class="manya-star-group" id="manya-star-group" title="Tap a star to return">
+                <div class="manya-bright-star"></div>
+                <div class="manya-constellation-star c-star-1"></div>
+                <div class="manya-constellation-star c-star-2"></div>
+                <div class="manya-constellation-star c-star-3"></div>
+                <div class="manya-constellation-star c-star-4"></div>
+                <div class="manya-constellation-star c-star-5"></div>
+                <div class="manya-constellation-star c-star-6"></div>
+            </div>
+            <div class="manya-final-content" id="manya-final-content">
+                <blockquote class="manya-final-quote">
+                    “Love is not always asking for forever.<br>
+                    Sometimes it is simply wishing that a person is happy,<br>
+                    even in rooms where you are absent.”
+                </blockquote>
+                <div class="manya-final-dedication">
+                    <p class="manya-for-line">For Manya</p>
+                    <p class="manya-sub-line">Written on a quiet night.</p>
+                    <p class="manya-author-line">— Manik</p>
+                </div>
+            </div>
+            <canvas id="manya-exit-canvas"></canvas>
         </div>
     </div>
 
@@ -274,7 +1116,7 @@
         let diagonalDots = [];
         let engravingAlpha = 0;
         let engravingGlowIntensity = 0;
-        let dateAlpha = 0; // Alpha tracker for the 24 February date display
+        let dateAlpha = 0;
 
         const palettes = [
             { main: 'rgba(255, 126, 179, 0.8)', glow: '#ff7eb3' }, 
@@ -284,7 +1126,6 @@
             { main: 'rgba(255, 211, 132, 0.8)', glow: '#ffd384' }  
         ];
 
-        // Golden Palette for Twilight Mode
         const goldPalettes = [
             { main: 'rgba(251, 191, 36, 0.85)', glow: '#fbbf24' },
             { main: 'rgba(253, 224, 71, 0.85)', glow: '#fde047' },
@@ -296,7 +1137,6 @@
         const bgm = document.getElementById('bgm'); 
         bgm.volume = 0.5;
 
-        // Fullscreen Functionality for Twilight Mode
         function enableFullScreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 const doc = document.documentElement;
@@ -309,7 +1149,7 @@
         }
 
         function startMusic() {
-            if (!isMusicPlaying) {
+            if (!isMusicPlaying && !isManyaMode) {
                 if (!bgm.src || bgm.src.includes('die')) {
                     bgm.pause();
                     bgm.src = 'dandelions.mp3';
@@ -848,7 +1688,7 @@
             ctx.fillStyle = `rgba(255, 248, 220, ${0.92 * engravingAlpha})`;
             ctx.fillText("Avi  ♥  Sanjana", centerX, centerY + 8);
 
-            // Date Line ("✦ 24 February ✦") Fades in smoothly as flowers dissolve/disappear
+            // Date Line
             if (dateAlpha > 0) {
                 ctx.font = 'italic 300 15px Georgia, "Times New Roman", serif';
                 ctx.textAlign = 'center';
@@ -950,7 +1790,6 @@
                     }
                 }
 
-                // Date appears smoothly AFTER/as the flowers dissolve & disappear
                 if (currentPhase === PHASE_SAND_DISSOLVE) {
                     if (dateAlpha < 1.0) dateAlpha += 0.008;
 
@@ -1025,6 +1864,7 @@
         const secretInput = document.getElementById('secret-input');
 
         function revealSecretNote() {
+            if (isManyaMode) return;
             uiTop.style.opacity = '0';          
             noteContainer.style.opacity = '1';  
             uiBottom.style.opacity = '0.1';     
@@ -1054,81 +1894,6 @@
                     flowers.push(new Flower(fieldX, fieldY, false, true, scaleFactor));
                 }, i * 40);
             }
-        }
-
-        function activateUltimateManyaMode() {
-            isManyaMode = true;
-            isSpecialMode = false;
-            specialBg.classList.remove('active');
-            blossomRainActive = true;
-            dateAlpha = 0;
-
-            bgm.pause();
-            bgm.src = "dandelions.mp3";
-            bgm.currentTime = 0;
-            bgm.play().then(() => { isMusicPlaying = true; }).catch(err => console.log(err));
-            
-            document.body.style.background = 'radial-gradient(circle at center, #3a111c 0%, #050002 100%)';
-            mainNote.innerHTML = `Some gardens bloom for everyone...<br>This little one was always waiting for you, Manya. 🌸`;
-            mainNote.style.color = '#ffb3c6';
-            mainNote.style.textShadow = '0 0 25px rgba(255, 179, 198, 0.6)';
-            revealSecretNote();
-
-            flowers.forEach(f => {
-                f.cachedImage = preRenderedFlowers[Math.floor(Math.random() * 6)];
-                f.isPink = true;
-                f.isGold = false;
-            });
-            vines.forEach(v => {
-                v.isPink = true;
-                v.isGold = false;
-                v.blooms.forEach(b => b.cachedImage = preRenderedFlowers[Math.floor(Math.random() * 6)]);
-            });
-
-            const totalHeartFlowers = 45;
-            for (let i = 0; i < totalHeartFlowers; i++) {
-                setTimeout(() => {
-                    if (!isManyaMode) return;
-                    const t = (Math.PI * 2 / totalHeartFlowers) * i;
-                    const heartX = 16 * Math.pow(Math.sin(t), 3);
-                    const heartY = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-                    
-                    const scaleFactor = Math.min(width, height) * 0.024;
-                    const targetCanvasX = width / 2 + (heartX * scaleFactor);
-                    const targetCanvasY = height * 0.48 - (heartY * scaleFactor);
-
-                    flowers.push(new Flower(targetCanvasX, targetCanvasY, true));
-                }, i * 130);
-            }
-
-            for(let j = 0; j < 50; j++) {
-                setTimeout(() => {
-                    if (!isManyaMode) return;
-                    const rX = Math.random() * width;
-                    const rY = height - (Math.random() * (height * 0.45) + 120);
-                    flowers.push(new Flower(rX, rY, true));
-                }, j * 80 + 2000);
-            }
-
-            setTimeout(() => {
-                blossomRainActive = false;
-                document.body.style.background = 'radial-gradient(circle at center, #111 0%, #000 100%)';
-                
-                mainNote.innerHTML = "Just wanted to leave a little corner of calm here.<br>Hope it made you smile, even if only for a minute. 🌸";
-                mainNote.style.color = '#ffe5ec';
-                mainNote.style.textShadow = '0 0 15px rgba(255, 179, 198, 0.3)';
-                
-                uiTop.style.opacity = '1';
-                uiBottom.style.opacity = '1';
-                watermark.style.opacity = '1';
-                noteContainer.style.opacity = '0';
-                
-                flowers.forEach(f => f.dissolving = true);
-                vines.forEach(v => v.dissolving = true);
-                
-                isManyaMode = false;
-                cherryBlossoms = [];
-            }, 15000);
         }
 
         function activateSpecialMode() {
@@ -1185,7 +1950,9 @@
                 secretModal.style.opacity = '0';
                 secretModal.style.pointerEvents = 'none';
                 secretInput.value = '';
-                activateUltimateManyaMode();
+                if (typeof window.activateUltimateManyaMode === 'function') {
+                    window.activateUltimateManyaMode();
+                }
             } else if (val === 'sanju&avi' || val === 'avi&sanju' || val === 'sanjana&avi' || val === 'avi&sanjana') {
                 secretInput.blur(); 
                 secretModal.style.opacity = '0';
@@ -1200,6 +1967,7 @@
         let startPos = {x: 0, y: 0};
 
         canvas.addEventListener('pointerdown', (e) => {
+            if (isManyaMode) return;
             startMusic(); 
             revealSecretNote();
             isDrawing = true;
@@ -1222,12 +1990,12 @@
         });
 
         canvas.addEventListener('pointermove', (e) => {
-            if (!isDrawing) return;
+            if (isManyaMode || !isDrawing) return;
             if (currentVine) currentVine.addPoint(e.clientX, e.clientY);
         });
 
         window.addEventListener('pointerup', (e) => {
-            if (!isDrawing) return;
+            if (isManyaMode || !isDrawing) return;
             isDrawing = false;
             const dx = e.clientX - startPos.x;
             const dy = e.clientY - startPos.y;
@@ -1269,6 +2037,7 @@
         });
 
         document.getElementById('autoBloomBtn').addEventListener('click', (e) => {
+            if (isManyaMode) return;
             startMusic(); 
             revealSecretNote();
             const btn = e.target;
@@ -1289,6 +2058,495 @@
         });
 
         animate();
+
+        /* ==========================================
+           MANYA MODE - OPTIMIZED JAVASCRIPT MODULE
+           ========================================== */
+        (function () {
+            let manyaStarAnimationId = null;
+            let manyaShimmerAnimId = null;
+            let manyaExitAnimId = null;
+            let manyaTypewriterTimer = null;
+            let manyaTimeouts = [];
+            let isManyaEventsBound = false;
+            let isExitingManyaMode = false;
+            let wasMusicPlayingBeforeManya = false;
+
+            function setManyaTimeout(fn, delay) {
+                const id = setTimeout(() => {
+                    fn();
+                    manyaTimeouts = manyaTimeouts.filter(t => t !== id);
+                }, delay);
+                manyaTimeouts.push(id);
+                return id;
+            }
+
+            function clearManyaTimersAndFrames() {
+                if (manyaStarAnimationId) {
+                    cancelAnimationFrame(manyaStarAnimationId);
+                    manyaStarAnimationId = null;
+                }
+                if (manyaShimmerAnimId) {
+                    cancelAnimationFrame(manyaShimmerAnimId);
+                    manyaShimmerAnimId = null;
+                }
+                if (manyaExitAnimId) {
+                    cancelAnimationFrame(manyaExitAnimId);
+                    manyaExitAnimId = null;
+                }
+                if (manyaTypewriterTimer) {
+                    clearInterval(manyaTypewriterTimer);
+                    manyaTypewriterTimer = null;
+                }
+                manyaTimeouts.forEach(clearTimeout);
+                manyaTimeouts = [];
+            }
+
+            function prefersReducedMotion() {
+                return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            }
+
+            function enterManyaFullscreen() {
+                const doc = document.documentElement;
+                try {
+                    if (doc.requestFullscreen) {
+                        doc.requestFullscreen().catch(() => {});
+                    } else if (doc.webkitRequestFullscreen) {
+                        doc.webkitRequestFullscreen();
+                    }
+                } catch (e) {
+                    // Fail silently
+                }
+            }
+
+            function exitManyaFullscreen() {
+                try {
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().catch(() => {});
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                } catch (e) {
+                    // Fail silently
+                }
+            }
+
+            function initManyaStarfield() {
+                const starCanvas = document.getElementById('manya-stars');
+                if (!starCanvas) return;
+                const starCtx = starCanvas.getContext('2d', { alpha: false });
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                starCanvas.width = w * dpr;
+                starCanvas.height = h * dpr;
+                starCtx.scale(dpr, dpr);
+
+                const starCount = w < 600 ? 50 : 80;
+                const stars = Array.from({ length: starCount }, () => ({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    size: Math.random() * 1.2 + 0.4,
+                    alpha: Math.random(),
+                    speed: Math.random() * 0.008 + 0.003
+                }));
+
+                function drawStars() {
+                    starCtx.fillStyle = '#070B14';
+                    starCtx.fillRect(0, 0, w, h);
+
+                    for (let i = 0; i < stars.length; i++) {
+                        const s = stars[i];
+                        if (!prefersReducedMotion()) {
+                            s.alpha += s.speed;
+                            if (s.alpha > 1 || s.alpha < 0) s.speed = -s.speed;
+                        }
+
+                        starCtx.fillStyle = `rgba(248, 245, 236, ${Math.max(0, Math.min(1, s.alpha * 0.7))})`;
+                        starCtx.beginPath();
+                        starCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                        starCtx.fill();
+                    }
+
+                    if (!prefersReducedMotion()) {
+                        manyaStarAnimationId = requestAnimationFrame(drawStars);
+                    }
+                }
+
+                if (manyaStarAnimationId) cancelAnimationFrame(manyaStarAnimationId);
+                drawStars();
+            }
+
+            function startGoldenShimmer() {
+                const canvas = document.getElementById('manya-shimmer-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+                const w = 400;
+                const h = 300;
+
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                ctx.scale(dpr, dpr);
+
+                const particleCount = prefersReducedMotion() ? 0 : 30;
+                const particles = Array.from({ length: particleCount }, () => ({
+                    x: w / 2 + (Math.random() - 0.5) * 200,
+                    y: h / 2 + (Math.random() - 0.5) * 80,
+                    size: Math.random() * 1.4 + 0.6,
+                    alpha: Math.random() * 0.8,
+                    vy: -(Math.random() * 0.3 + 0.1),
+                    vx: (Math.random() - 0.5) * 0.2,
+                    decay: Math.random() * 0.005 + 0.002
+                }));
+
+                function animateShimmer() {
+                    ctx.clearRect(0, 0, w, h);
+
+                    for (let i = 0; i < particles.length; i++) {
+                        const p = particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.alpha -= p.decay;
+
+                        if (p.alpha <= 0) {
+                            p.x = w / 2 + (Math.random() - 0.5) * 220;
+                            p.y = h / 2 + (Math.random() - 0.5) * 60;
+                            p.alpha = Math.random() * 0.8;
+                        }
+
+                        ctx.fillStyle = `rgba(212, 175, 55, ${Math.max(0, p.alpha)})`;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    manyaShimmerAnimId = requestAnimationFrame(animateShimmer);
+                }
+
+                if (!prefersReducedMotion()) {
+                    animateShimmer();
+                }
+            }
+
+            /* Golden Drifting Particles for Exit Interaction */
+            function spawnExitParticles() {
+                const canvas = document.getElementById('manya-exit-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                ctx.scale(dpr, dpr);
+
+                const particles = Array.from({ length: 40 }, () => ({
+                    x: w * 0.5 + (Math.random() - 0.5) * (w * 0.6),
+                    y: h * 0.4 + (Math.random() - 0.5) * (h * 0.3),
+                    size: Math.random() * 2 + 0.8,
+                    alpha: Math.random() * 0.9,
+                    vy: -(Math.random() * 1.8 + 0.8),
+                    vx: (Math.random() - 0.5) * 0.6,
+                    decay: Math.random() * 0.012 + 0.006
+                }));
+
+                function animateExitParticles() {
+                    ctx.clearRect(0, 0, w, h);
+
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.alpha -= p.decay;
+
+                        if (p.alpha > 0) {
+                            ctx.fillStyle = `rgba(254, 240, 138, ${Math.max(0, p.alpha)})`;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    });
+
+                    manyaExitAnimId = requestAnimationFrame(animateExitParticles);
+                }
+
+                animateExitParticles();
+            }
+
+            /* Bug Fix: Immediately disable old pink visual states when exit sequence begins */
+            function handleStarExit(e) {
+                if (isExitingManyaMode) return;
+                isExitingManyaMode = true;
+
+                // Immediately clear Manya flag and old pink visual states
+                // so the underlying garden canvas renders standard colors during transition
+                isManyaMode = false;
+                blossomRainActive = false;
+                cherryBlossoms = [];
+                flowers.forEach(f => f.isPink = false);
+                vines.forEach(v => v.isPink = false);
+
+                const overlay = document.getElementById('manya-overlay');
+
+                if (overlay) {
+                    overlay.style.pointerEvents = 'none';
+                }
+
+                const brightStar = document.querySelector('.manya-mode .manya-bright-star');
+                if (brightStar) brightStar.classList.add('manya-star-brightened');
+
+                const constellationStars = document.querySelectorAll('.manya-mode .manya-constellation-star');
+                constellationStars.forEach(star => star.classList.add('manya-star-ripple'));
+
+                const finalContent = document.getElementById('manya-final-content');
+                if (finalContent) finalContent.classList.add('manya-fade-out');
+
+                spawnExitParticles();
+
+                setManyaTimeout(() => {
+                    if (overlay) overlay.style.opacity = '0';
+                }, 600);
+
+                setManyaTimeout(() => {
+                    isExitingManyaMode = false;
+
+                    clearManyaTimersAndFrames();
+
+                    if (overlay) {
+                        overlay.classList.remove('active');
+                        overlay.classList.add('manya-disabled');
+                        overlay.style.opacity = '';
+                        overlay.style.pointerEvents = 'none';
+                        overlay.style.display = 'none';
+                    }
+
+                    if (uiTop) uiTop.style.opacity = '1';
+                    if (uiBottom) uiBottom.style.opacity = '1';
+                    if (watermark) watermark.style.opacity = '1';
+
+                    const gardenCanvas = document.getElementById('garden');
+                    if (gardenCanvas) gardenCanvas.style.pointerEvents = 'auto';
+
+                    exitManyaFullscreen();
+
+                    if (wasMusicPlayingBeforeManya && bgm) {
+                        bgm.play().then(() => {
+                            isMusicPlaying = true;
+                        }).catch(() => {});
+                    }
+                    wasMusicPlayingBeforeManya = false;
+
+                    if (finalContent) finalContent.classList.remove('manya-fade-out');
+                    if (brightStar) brightStar.classList.remove('manya-star-brightened');
+                    constellationStars.forEach(star => star.classList.remove('manya-star-ripple'));
+                }, 2000);
+            }
+
+            function transitionToManyaScene2() {
+                const scene1 = document.getElementById('manya-scene-1');
+                const scene2 = document.getElementById('manya-scene-2');
+                const deskBg = document.getElementById('manya-desk-bg');
+
+                if (scene1) scene1.classList.remove('active');
+                if (deskBg) deskBg.classList.add('active');
+
+                setManyaTimeout(() => {
+                    if (scene2) scene2.classList.add('active');
+                }, 600);
+            }
+
+            function openManyaLetter() {
+                const envelope = document.getElementById('manya-envelope');
+                if (!envelope || envelope.classList.contains('open')) return;
+
+                envelope.classList.add('open');
+                setManyaTimeout(typewriterEffect, 1400);
+            }
+
+            function typewriterEffect() {
+                const bodyElem = document.getElementById('manya-letter-body');
+                const letterElem = document.getElementById('manya-letter');
+                if (!bodyElem) return;
+
+                const text = "I did not make this page to ask for anything.\nI made it so a quiet feeling could have a quiet place to live.\n\n— Manik";
+                let index = 0;
+                bodyElem.textContent = "";
+
+                if (letterElem) letterElem.scrollTop = 0;
+                bodyElem.scrollTop = 0;
+
+                if (prefersReducedMotion()) {
+                    bodyElem.textContent = text;
+                    bodyElem.classList.add('done');
+                    setManyaTimeout(transitionToManyaScene3, 2000);
+                    return;
+                }
+
+                if (manyaTypewriterTimer) clearInterval(manyaTypewriterTimer);
+                manyaTypewriterTimer = setInterval(() => {
+                    if (index < text.length) {
+                        bodyElem.textContent += text.charAt(index);
+                        index++;
+                        if (letterElem) letterElem.scrollTop = 0;
+                        bodyElem.scrollTop = 0;
+                    } else {
+                        clearInterval(manyaTypewriterTimer);
+                        manyaTypewriterTimer = null;
+                        bodyElem.classList.add('done');
+                        if (letterElem) letterElem.scrollTop = 0;
+                        setManyaTimeout(transitionToManyaScene3, 3400);
+                    }
+                }, 45);
+            }
+
+            function transitionToManyaScene3() {
+                const scene2 = document.getElementById('manya-scene-2');
+                const scene3 = document.getElementById('manya-scene-3');
+                const deskBg = document.getElementById('manya-desk-bg');
+
+                if (scene2) scene2.classList.remove('active');
+                if (deskBg) deskBg.classList.remove('active');
+
+                setManyaTimeout(() => {
+                    if (scene3) scene3.classList.add('active');
+                }, 800);
+            }
+
+            function transitionToManyaScene4() {
+                const scene3 = document.getElementById('manya-scene-3');
+                const scene4 = document.getElementById('manya-scene-4');
+
+                if (scene3) scene3.classList.remove('active');
+
+                if (manyaShimmerAnimId) {
+                    cancelAnimationFrame(manyaShimmerAnimId);
+                    manyaShimmerAnimId = null;
+                }
+
+                initManyaStarfield();
+
+                setManyaTimeout(() => {
+                    if (scene4) scene4.classList.add('active');
+                }, 1000);
+            }
+
+            function handleManyaNameSubmit(e) {
+                if (e.key !== 'Enter') return;
+
+                const input = document.getElementById('manya-name-input');
+                if (!input) return;
+
+                const val = input.value.trim().toLowerCase();
+                if (val !== 'manya') return;
+
+                input.blur();
+
+                if (manyaStarAnimationId) {
+                    cancelAnimationFrame(manyaStarAnimationId);
+                    manyaStarAnimationId = null;
+                }
+
+                const inputStage = document.getElementById('manya-input-stage');
+                if (inputStage) inputStage.classList.add('hidden');
+
+                const revealStage = document.getElementById('manya-reveal-stage');
+                if (revealStage) revealStage.classList.add('active');
+
+                startGoldenShimmer();
+                setManyaTimeout(transitionToManyaScene4, 6500);
+            }
+
+            window.activateUltimateManyaMode = function () {
+                isManyaMode = true;
+                isSpecialMode = false;
+                blossomRainActive = false;
+                cherryBlossoms = [];
+                isExitingManyaMode = false;
+
+                wasMusicPlayingBeforeManya = isMusicPlaying && bgm && !bgm.paused;
+                if (bgm) {
+                    bgm.pause();
+                }
+                isMusicPlaying = false;
+
+                enterManyaFullscreen();
+
+                clearManyaTimersAndFrames();
+
+                const scene1 = document.getElementById('manya-scene-1');
+                const scene2 = document.getElementById('manya-scene-2');
+                const scene3 = document.getElementById('manya-scene-3');
+                const scene4 = document.getElementById('manya-scene-4');
+                const deskBg = document.getElementById('manya-desk-bg');
+                const envelope = document.getElementById('manya-envelope');
+                const bodyElem = document.getElementById('manya-letter-body');
+                const inputStage = document.getElementById('manya-input-stage');
+                const revealStage = document.getElementById('manya-reveal-stage');
+                const nameInput = document.getElementById('manya-name-input');
+                const finalContent = document.getElementById('manya-final-content');
+
+                if (scene1) scene1.classList.add('active');
+                if (scene2) scene2.classList.remove('active');
+                if (scene3) scene3.classList.remove('active');
+                if (scene4) scene4.classList.remove('active');
+                if (deskBg) deskBg.classList.remove('active');
+                if (envelope) envelope.classList.remove('open');
+                if (inputStage) inputStage.classList.remove('hidden');
+                if (revealStage) revealStage.classList.remove('active');
+                if (nameInput) nameInput.value = '';
+                if (finalContent) finalContent.classList.remove('manya-fade-out');
+                if (bodyElem) {
+                    bodyElem.textContent = "";
+                    bodyElem.classList.remove('done');
+                }
+
+                const overlay = document.getElementById('manya-overlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                    overlay.classList.remove('manya-disabled');
+                    overlay.style.pointerEvents = 'auto';
+                    overlay.style.opacity = '';
+                    overlay.classList.add('active');
+                    initManyaStarfield();
+                }
+
+                if (uiTop) uiTop.style.opacity = '0';
+                if (uiBottom) uiBottom.style.opacity = '0';
+                if (watermark) watermark.style.opacity = '0';
+                if (noteContainer) noteContainer.style.opacity = '0';
+            };
+
+            function bindManyaEvents() {
+                if (isManyaEventsBound) return;
+
+                const enterBtn = document.getElementById('manya-enter-btn');
+                if (enterBtn) enterBtn.addEventListener('click', transitionToManyaScene2);
+
+                const waxSeal = document.getElementById('manya-wax-seal');
+                if (waxSeal) waxSeal.addEventListener('click', openManyaLetter);
+
+                const nameInput = document.getElementById('manya-name-input');
+                if (nameInput) nameInput.addEventListener('keydown', handleManyaNameSubmit);
+
+                const starGroup = document.getElementById('manya-star-group');
+                if (starGroup) starGroup.addEventListener('click', handleStarExit);
+
+                isManyaEventsBound = true;
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindManyaEvents);
+            } else {
+                bindManyaEvents();
+            }
+        })();
     </script>
 </body>
 </html>
